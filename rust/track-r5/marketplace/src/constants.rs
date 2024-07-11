@@ -1,0 +1,1 @@
+pub const SERVICE_ACCOUNT_SEEDS: &[u8] = b"service-account";

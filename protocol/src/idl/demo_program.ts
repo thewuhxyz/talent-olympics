@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/demo_program.json`.
  */
 export type DemoProgram = {
-  "address": "Ed6FZS4cpdTPrqoFihR3QciyhaqS2FedHRDs46bDb2Zs",
+  "address": "G4o2iGwTCSZuAAXphwm8bu6yfDFT3psJsDgBMbgpYByQ",
   "metadata": {
     "name": "demoProgram",
     "version": "0.1.0",

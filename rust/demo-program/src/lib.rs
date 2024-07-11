@@ -1,5 +1,5 @@
-
 pub mod constants;
+// pub mod utils;
 pub mod error;
 pub mod instructions;
 pub mod state;
@@ -7,7 +7,7 @@ pub mod state;
 use anchor_lang::prelude::*;
 use instructions::*;
 
-declare_id!("Ed6FZS4cpdTPrqoFihR3QciyhaqS2FedHRDs46bDb2Zs");
+declare_id!("G4o2iGwTCSZuAAXphwm8bu6yfDFT3psJsDgBMbgpYByQ");
 
 #[program]
 pub mod demo_program {
@@ -23,4 +23,3 @@ pub mod demo_program {
     }
 }
 
-	
