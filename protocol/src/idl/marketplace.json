@@ -1,5 +1,5 @@
 {
-  "address": "Ed6FZS4cpdTPrqoFihR3QciyhaqS2FedHRDs46bDb2Zs",
+  "address": "HYLnmvP84H2xnoVq1RSduzvdBVSibs3ZyxNfK6ak8VwL",
   "metadata": {
     "name": "marketplace",
     "version": "0.1.0",
@@ -8,16 +8,16 @@
   },
   "instructions": [
     {
-      "name": "list_service",
+      "name": "buy_service",
       "discriminator": [
-        1,
-        210,
-        220,
-        97,
-        94,
-        11,
-        206,
-        34
+        175,
+        174,
+        174,
+        180,
+        246,
+        138,
+        81,
+        21
       ],
       "accounts": [
         {
@@ -26,18 +26,25 @@
           "signer": true
         },
         {
-          "name": "authority",
+          "name": "receiver"
+        },
+        {
+          "name": "provider",
+          "writable": true,
+          "relations": [
+            "service_account"
+          ]
+        },
+        {
+          "name": "service_ticket_mint",
           "writable": true,
           "signer": true
         },
         {
-          "name": "mint",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "service",
-          "writable": true
+          "name": "service_mint",
+          "relations": [
+            "service_account"
+          ]
         },
         {
           "name": "service_account",
@@ -66,19 +73,19 @@
               },
               {
                 "kind": "account",
-                "path": "mint"
+                "path": "service_mint"
               }
             ]
           }
         },
         {
-          "name": "mint_token_account",
+          "name": "service_ticket_token_account",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "authority"
+                "path": "receiver"
               },
               {
                 "kind": "account",
@@ -86,7 +93,7 @@
               },
               {
                 "kind": "account",
-                "path": "mint"
+                "path": "service_ticket_mint"
               }
             ],
             "program": {
@@ -129,6 +136,218 @@
           }
         },
         {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "join_service",
+      "discriminator": [
+        23,
+        153,
+        219,
+        144,
+        212,
+        239,
+        189,
+        210
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "provider",
+          "writable": true
+        },
+        {
+          "name": "service_mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "service_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  114,
+                  118,
+                  105,
+                  99,
+                  101,
+                  45,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "service_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "list_service",
+      "discriminator": [
+        1,
+        210,
+        220,
+        97,
+        94,
+        11,
+        206,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "provider",
+          "writable": true
+        },
+        {
+          "name": "service_mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "service_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "payer"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "service_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "service_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  114,
+                  118,
+                  105,
+                  99,
+                  101,
+                  45,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "service_mint"
+              }
+            ]
+          }
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
@@ -143,10 +362,10 @@
       ],
       "args": [
         {
-          "name": "args",
+          "name": "service_agreement_config",
           "type": {
             "defined": {
-              "name": "ListServiceArgs"
+              "name": "ServiceAgreementConfig"
             }
           }
         }
@@ -171,13 +390,48 @@
   "errors": [
     {
       "code": 6000,
-      "name": "NotAdmin",
-      "msg": "Admin Signer Only"
+      "name": "ServiceAccountAlreadyInitialized",
+      "msg": "Service Account already initialized"
+    },
+    {
+      "code": 6001,
+      "name": "MetadataKeyMismatch",
+      "msg": "Metadata Key does not match"
+    },
+    {
+      "code": 6002,
+      "name": "MetadataValueParseError",
+      "msg": "Could not parse Metadata value"
+    },
+    {
+      "code": 6003,
+      "name": "ServiceAccountMismatch",
+      "msg": "Service Account keys did not match the provided account key"
     }
   ],
   "types": [
     {
-      "name": "ListServiceArgs",
+      "name": "ServiceAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "service_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ServiceAgreementConfig",
       "type": {
         "kind": "struct",
         "fields": [
@@ -194,28 +448,24 @@
             "type": "string"
           },
           {
-            "name": "max_size",
-            "type": "u32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ServiceAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "pubkey"
+            "name": "description",
+            "type": "string"
           },
           {
-            "name": "service_mint",
-            "type": "pubkey"
+            "name": "price",
+            "type": "u64"
           },
           {
-            "name": "bump",
-            "type": "u8"
+            "name": "fee_basis_points",
+            "type": "u16"
+          },
+          {
+            "name": "maximum_fee",
+            "type": "u64"
+          },
+          {
+            "name": "transferable",
+            "type": "bool"
           }
         ]
       }

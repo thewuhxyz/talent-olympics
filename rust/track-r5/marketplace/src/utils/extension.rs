@@ -66,7 +66,6 @@ pub fn get_meta_list(approve_account: Option<Pubkey>) -> Vec<ExtraAccountMeta> {
 }
 
 pub fn get_meta_list_size(approve_account: Option<Pubkey>) -> usize {
-    // safe because it's either 0 or 1
     ExtraAccountMetaList::size_of(get_meta_list(approve_account).len()).unwrap()
 }
 
