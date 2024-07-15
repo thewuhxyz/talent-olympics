@@ -8,16 +8,13 @@ This is a starter template generated from [Create-Anchor-dApp](https://www.npmjs
 Start by:
 
 ```sh
-pnpm run:validator
+pnpm just run-validator
 ```
 ```sh
-pnpm build
+pnpm just deploy-all
 ```
 ```sh
-just deploy-all
-```
-```sh
-just test marketplace
+pnpm just test marketplace
 ```
 
 ## Not-So-Quick Start
