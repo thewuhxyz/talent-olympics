@@ -27,16 +27,13 @@ export type Marketplace = {
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "buyer",
           "writable": true,
           "signer": true
         },
         {
           "name": "provider",
-          "writable": true,
-          "relations": [
-            "serviceAccount"
-          ]
+          "writable": true
         },
         {
           "name": "serviceTicketMint",
@@ -45,13 +42,10 @@ export type Marketplace = {
         },
         {
           "name": "serviceMint",
-          "writable": true,
-          "relations": [
-            "serviceAccount"
-          ]
+          "writable": true
         },
         {
-          "name": "serviceAccount",
+          "name": "providerServiceAccount",
           "writable": true,
           "pda": {
             "seeds": [
@@ -154,7 +148,7 @@ export type Marketplace = {
             ],
             "program": {
               "kind": "account",
-              "path": "transferHookProgramId"
+              "path": "transferHookProgram"
             }
           }
         },
@@ -162,7 +156,10 @@ export type Marketplace = {
           "name": "programId"
         },
         {
-          "name": "transferHookProgramId"
+          "name": "transferHookProgram"
+        },
+        {
+          "name": "transferHookProgramAccount"
         },
         {
           "name": "systemProgram",
@@ -402,11 +399,6 @@ export type Marketplace = {
         },
         {
           "name": "serviceMint"
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "reseller",
@@ -921,11 +913,11 @@ export type Marketplace = {
         "kind": "struct",
         "fields": [
           {
-            "name": "provider",
+            "name": "holder",
             "type": "pubkey"
           },
           {
-            "name": "serviceMint",
+            "name": "mint",
             "type": "pubkey"
           },
           {

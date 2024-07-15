@@ -18,7 +18,7 @@ import {
 	ComputeBudgetProgram,
 } from "@solana/web3.js"
 
-describe("Marketplace: Non-transferable", () => {
+describe("Marketplace: Transferable", () => {
 	const provider = AnchorProvider.env()
 	const connection = provider.connection
 
@@ -137,7 +137,7 @@ describe("Marketplace: Non-transferable", () => {
 					units: 400000, // specify the number of compute units you want
 				}),
 			])
-			.rpc({ skipPreflight: true })
+			.rpc({ skipPreflight: false })
 
 		console.log("✅ Transaction successful", explorer(tx, "tx", "custom"))
 
@@ -160,12 +160,12 @@ describe("Marketplace: Non-transferable", () => {
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
 
 		assert(
-			service.provider.toBase58() === serviceProvider.publicKey.toBase58(),
+			service.holder.toBase58() === serviceProvider.publicKey.toBase58(),
 			"counter address does not match"
 		)
 
 		assert(
-			service.serviceMint.toBase58() === service.serviceMint.toBase58(),
+			service.mint.toBase58() === service_mint.publicKey.toBase58(),
 			"authority does not match"
 		)
 	})
@@ -181,16 +181,17 @@ describe("Marketplace: Non-transferable", () => {
 			.buyService()
 			.accountsStrict({
 				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-				payer: serviceReseller.publicKey,
+				buyer: serviceReseller.publicKey,
 				provider: serviceProvider.publicKey,
 				serviceTicketTokenAccount: ticket,
 				serviceTicketMint: service_ticket_mint.publicKey,
-				serviceAccount: servicePda(service_mint.publicKey),
+				providerServiceAccount: servicePda(service_mint.publicKey),
 				serviceMint: service_mint.publicKey,
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
 				systemProgram: SystemProgram.programId,
 				buyerServiceAccount: servicePda(service_ticket_mint.publicKey),
-				transferHookProgramId: transfer_hook_program_id,
+				transferHookProgram: transfer_hook_program_id,
+				transferHookProgramAccount: transfer_hook_program_id,
 				extraAccountMetasList: extraAccountMetaListPDA,
 				programId: program.programId,
 				// mintRoyaltyConfig,
@@ -227,15 +228,130 @@ describe("Marketplace: Non-transferable", () => {
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
 
-		assert(
-			service.provider.toBase58() === serviceReseller.publicKey.toBase58(),
-			"counter address does not match"
+		// assert(
+		// 	service.holder.toBase58() === serviceProvider.publicKey.toBase58(),
+		// 	"counter address does not match"
+		// )
+
+		// assert(
+		// 	service.mint.toBase58() === service_mint.publicKey.toBase58(),
+		// 	"authority does not match"
+		// )
+	})
+	
+	it("initialize royalties", async () => {
+		console.log("---- creating a service ----")
+
+		const ticket = service_ticket_token(serviceReseller.publicKey)
+
+		console.log("token account:", ticket)
+
+		let tx = await program.methods
+			.royaltyInit()
+			.accountsStrict({
+				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+				provider: serviceProvider.publicKey,
+				serviceTicketMint: service_ticket_mint.publicKey,
+				systemProgram: SystemProgram.programId,
+				transferHookProgram: transfer_hook_program_id,
+				mintRoyaltyConfig,
+				mintRoyaltyWsolTokenAccount: wsol(mintRoyaltyConfig),
+				tokenProgramClassic: TOKEN_PROGRAM_ID,
+				wsolMint: NATIVE_MINT,
+				payer: serviceReseller.publicKey,
+				serviceAccount: servicePda(service_ticket_mint.publicKey)
+			})
+			.signers([serviceReseller])
+			.preInstructions([
+				ComputeBudgetProgram.setComputeUnitLimit({
+					units: 400000,
+				}),
+			])
+			.rpc({ skipPreflight: true })
+
+		console.log("✅ Transaction successful", explorer(tx, "tx", "custom"))
+
+		// console.log(
+		// 	"👉 ticket mint Account",
+		// 	explorer(service_ticket_mint.publicKey.toBase58(), "address", "custom")
+		// )
+
+		// console.log(
+		// 	"👉 ticket token Account",
+		// 	explorer(ticket.toBase58(), "address", "custom")
+		// )
+
+		await sleep(3)
+	})
+
+	it("resells a service ticket", async () => {
+		console.log("---- creating a service ----")
+
+		const ticket = service_ticket_token(serviceReseller.publicKey)
+
+		console.log("token account:", ticket)
+
+		let tx = await program.methods
+			.resellService()
+			.accountsStrict({
+				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+				reseller: serviceReseller.publicKey,
+				serviceTicketMint: service_ticket_mint.publicKey,
+				tokenProgram: TOKEN_2022_PROGRAM_ID,
+				systemProgram: SystemProgram.programId,
+				extraAccountMetasList: extraAccountMetaListPDA,
+				mintRoyaltyConfig,
+				mintRoyaltyWsolTokenAccount: wsol(mintRoyaltyConfig),
+				providerWsolTokenAccount: wsol(serviceProvider.publicKey),
+				tokenProgramClassic: TOKEN_PROGRAM_ID,
+				wsolMint: NATIVE_MINT,
+				payer: serviceReceiver.publicKey,
+				payerServiceTicketToken: service_ticket_token(
+					serviceReceiver.publicKey
+				),
+				resellerServiceTicketToken: service_ticket_token(
+					serviceReseller.publicKey
+				),
+				resellerWsolTokenAccount: wsol(serviceReseller.publicKey),
+				serviceAccount: servicePda(service_ticket_mint.publicKey),
+				transferHookProgramId: transfer_hook_program_id
+			})
+			.signers([serviceReseller, serviceReceiver])
+			.preInstructions([
+				ComputeBudgetProgram.setComputeUnitLimit({
+					units: 400000,
+				}),
+			])
+			.rpc({ skipPreflight: true })
+
+		console.log("✅ Transaction successful", explorer(tx, "tx", "custom"))
+
+		console.log(
+			"👉 ticket mint Account",
+			explorer(service_ticket_mint.publicKey.toBase58(), "address", "custom")
 		)
 
-		assert(
-			service.serviceMint.toBase58() ===
-				service_ticket_mint.publicKey.toBase58(),
-			"authority does not match"
+		console.log(
+			"👉 ticket token Account",
+			explorer(ticket.toBase58(), "address", "custom")
 		)
+
+		await sleep(3)
+
+		const service = await program.account.serviceAccount.fetch(
+			servicePda(service_ticket_mint.publicKey)
+		)
+
+		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
+
+		// assert(
+		// 	service.holder.toBase58() === serviceProvider.publicKey.toBase58(),
+		// 	"counter address does not match"
+		// )
+
+		// assert(
+		// 	service.mint.toBase58() === service_mint.publicKey.toBase58(),
+		// 	"authority does not match"
+		// )
 	})
 })

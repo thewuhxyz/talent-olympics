@@ -8,8 +8,8 @@ use utils;
 #[account]
 #[derive(InitSpace, PartialEq)]
 pub struct ServiceAccount {
-    pub provider: Pubkey,
-    pub service_mint: Pubkey,
+    pub holder: Pubkey,
+    pub mint: Pubkey,
     pub bump: u8,
     pub is_sale: bool,
     pub is_listed: bool,
@@ -17,9 +17,9 @@ pub struct ServiceAccount {
 }
 
 impl ServiceAccount {
-    pub fn init(&mut self, authority: Pubkey, service_mint: Pubkey, bump: u8) -> Result<()> {
-        self.provider = authority;
-        self.service_mint = service_mint;
+    pub fn init(&mut self, holder: Pubkey, mint: Pubkey, bump: u8) -> Result<()> {
+        self.holder = holder;
+        self.mint = mint;
         self.bump = bump;
         self.is_initialized = true;
         self.is_listed = false;

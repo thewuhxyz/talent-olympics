@@ -25,17 +25,14 @@ pub struct Relist<'info> {
     #[account()]
     pub service_mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
     /// CHECK: receiver of the service nft
     #[account()]
     pub reseller: Signer<'info>,
     
     #[account(
         mut,
-        constraint=service_account.provider==reseller.key(), 
-        constraint=service_account.service_mint==service_ticket_mint.key(), 
+        constraint=service_account.holder==reseller.key(), 
+        constraint=service_account.mint==service_ticket_mint.key(), 
         seeds=[SERVICE_ACCOUNT_SEEDS, service_ticket_mint.key().as_ref()],
         bump=service_account.bump
 

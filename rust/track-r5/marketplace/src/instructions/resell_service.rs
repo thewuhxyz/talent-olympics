@@ -39,8 +39,8 @@ pub struct Resell<'info> {
 
     #[account(
         mut,
-        constraint=service_account.provider==reseller.key(), 
-        constraint=service_account.service_mint==service_ticket_mint.key(), 
+        constraint=service_account.holder==reseller.key(), 
+        constraint=service_account.mint==service_ticket_mint.key(), 
         seeds=[SERVICE_ACCOUNT_SEEDS, service_ticket_mint.key().as_ref()],
         bump=service_account.bump
 
@@ -97,22 +97,11 @@ pub struct Resell<'info> {
 }
 
 pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Result<()> {
-    msg!("start");
-    let service_account = & ctx.accounts.service_account;
     let service_ticket = &ctx.accounts.service_ticket_mint;
     let reseller_service_ticket_token = &ctx.accounts.reseller_service_ticket_token;
     let payer_service_ticket_token = &ctx.accounts.payer_service_ticket_token;
     let token_program = &ctx.accounts.token_program;
     let system_program = &ctx.accounts.system_program;
-    
-    // let payer_token_account = &ctx.accounts.payer_token_account;
-    // let reseller_token_account = &ctx.accounts.reseller_token_account;
-    // let provider_token_account = &ctx.accounts.provider_token_account;
-    
-    // let payer_token_account = InterfaceAccount::<TokenAccount>::try_from(&ctx.remaining_accounts[0])?;
-    // let reseller_token_account = &ctx.remaining_accounts[1];
-    // let provider_token_account = &ctx.remaining_accounts[2];
-    
     let payer = &ctx.accounts.payer;
     let reseller = &ctx.accounts.reseller;
     let extra_account_metas_list = &ctx.accounts.extra_account_metas_list;
@@ -125,8 +114,6 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
     let provider_wsol_token_account = &ctx.accounts.provider_wsol_token_account;
     let mint_royalty_config = &ctx.accounts.mint_royalty_config;
     
-    // service_account.is_sale = true;
-
     update_royalty_config(&ctx, true)?;
 
     let (reseller_amount, provider_amount) = ServiceAgreement::try_from(service_ticket.to_account_info())?.royalties_split()?;
@@ -153,7 +140,6 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
             wsol_mint.to_account_info(),
             token_program_classic.to_account_info(),
             associated_token_program.to_account_info(),
-            service_account.clone().to_account_info(),
             transfer_hook_program_id.clone().to_account_info(),
             ],
         1,
@@ -165,10 +151,8 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
     utils::token_sync_native(&**provider_wsol_token_account, token_program)?;
     utils::token_sync_native(&**reseller_wsol_token_account, token_program)?;
 
-    // // transfer hook should have updated provider
-    // service_account.is_listed = false;
-    // service_account.is_sale = false;
-    // service_account.provider = payer.key();
+
+    update_royalty_config(&ctx, false)?;
     
     Ok(())
 }

@@ -21,16 +21,13 @@
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "buyer",
           "writable": true,
           "signer": true
         },
         {
           "name": "provider",
-          "writable": true,
-          "relations": [
-            "service_account"
-          ]
+          "writable": true
         },
         {
           "name": "service_ticket_mint",
@@ -39,13 +36,10 @@
         },
         {
           "name": "service_mint",
-          "writable": true,
-          "relations": [
-            "service_account"
-          ]
+          "writable": true
         },
         {
-          "name": "service_account",
+          "name": "provider_service_account",
           "writable": true,
           "pda": {
             "seeds": [
@@ -148,7 +142,7 @@
             ],
             "program": {
               "kind": "account",
-              "path": "transfer_hook_program_id"
+              "path": "transfer_hook_program"
             }
           }
         },
@@ -156,7 +150,10 @@
           "name": "program_id"
         },
         {
-          "name": "transfer_hook_program_id"
+          "name": "transfer_hook_program"
+        },
+        {
+          "name": "transfer_hook_program_account"
         },
         {
           "name": "system_program",
@@ -396,11 +393,6 @@
         },
         {
           "name": "service_mint"
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
         },
         {
           "name": "reseller",
@@ -915,11 +907,11 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "provider",
+            "name": "holder",
             "type": "pubkey"
           },
           {
-            "name": "service_mint",
+            "name": "mint",
             "type": "pubkey"
           },
           {

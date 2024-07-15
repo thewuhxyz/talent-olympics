@@ -22,8 +22,8 @@ pub struct Royalties<'info> {
 
     /// CHECK: mint account, yet to be initialized
     #[account(
-        // seeds = [b"extra-account-metas", service_ticket_mint.key().as_ref()],
-        // bump 
+        seeds = [b"extra-account-metas", service_ticket_mint.key().as_ref()],
+        bump 
     )]
     pub extra_account_metas_list: UncheckedAccount<'info>,
 
