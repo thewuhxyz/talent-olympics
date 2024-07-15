@@ -1,38 +1,40 @@
 {
-  "name": "talent-olympics",
-  "private": true,
-  "scripts": {
-    "anchor": "just anchor",
-    "build": "turbo build",
-    "build:app": "turbo build --filter=app",
-    "build:protocol": "turbo build --filter=protocol",
-    "dev": "turbo dev",
-    "dev:app": "turbo dev --filter=app",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo lint",
-    "program:build": "just build",
-    "program:build-all": "just build-all",
-    "program:close": "just close",
-    "program:copy-idl": "just copy-idl",
-    "program:deploy": "just deploy",
-    "program:deploy-all": "just deploy-all",
-    "program:extend": "just extend",
-    "program:recover": "just recover",
-    "program:redeploy": "just redeploy",
-    "program:test": "just test",
-    "program:test-all": "just test-all",
-    "shadcn:add": "cd app && pnpm shadcn:add",
-    "start": "turbo start"
-  },
-  "resolutions": {
-    "@solana/web3.js": "1.88.0",
-    "rpc-websockets": "7.9.0"
-  },
-  "devDependencies": {
-    "just-install": "2.0.1",
-    "prettier": "^3.2.5",
-    "ts-mocha": "^10.0.0",
-    "turbo": "^1.13.2"
-  },
-  "packageManager": "pnpm@9.4.0"
+	"name": "talent-olympics",
+	"private": true,
+	"scripts": {
+		"anchor": "just anchor",
+		"build": "turbo build",
+		"build:app": "turbo build --filter=app",
+		"build:protocol": "turbo build --filter=protocol",
+		"dev": "turbo dev",
+		"dev:app": "turbo dev --filter=app",
+		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
+		"lint": "turbo lint",
+		"program:build": "just build",
+		"program:build-all": "just build-all",
+		"program:close": "just close",
+		"program:copy-idl": "just copy-idl",
+		"program:deploy": "just deploy",
+		"program:deploy-all": "just deploy-all",
+		"program:extend": "just extend",
+		"program:recover": "just recover",
+		"program:redeploy": "just redeploy",
+		"program:test": "just test",
+		"program:test-all": "just test-all",
+		"run:validator": "just run-validator",
+		"shadcn:add": "cd app && pnpm shadcn:add",
+		"start": "turbo start",
+    "update:cargo-deps": "just update-deps"
+	},
+	"resolutions": {
+		"@solana/web3.js": "1.88.0",
+		"rpc-websockets": "7.9.0"
+	},
+	"devDependencies": {
+		"just-install": "2.0.1",
+		"prettier": "^3.2.5",
+		"ts-mocha": "^10.0.0",
+		"turbo": "^1.13.2"
+	},
+	"packageManager": "pnpm@9.4.0"
 }

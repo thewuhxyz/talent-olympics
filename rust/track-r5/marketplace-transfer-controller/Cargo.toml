@@ -1,12 +1,12 @@
 [package]
-name = "demo-program"
+name = "marketplace-transfer-controller"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = [ "cdylib", "lib" ]
-name = "demo_program"
+name = "marketplace_transfer_controller"
 
 [features]
 no-entrypoint = []
@@ -18,9 +18,9 @@ idl-build = [ "anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 [dependencies]
 anchor-lang = {version="0.30.1", features = ["init-if-needed"]}
-anchor-spl = {version= "0.30.1", features = ["metadata"]}
-solana-program = "1.18.17"
+anchor-spl = {version= "0.30.1"}
 spl-tlv-account-resolution = "0.6.3"
 spl-transfer-hook-interface = "0.6.3"
-spl-type-length-value = "0.4.3"
+spl-type-length-value = "=0.4.3"
 spl-pod = "0.2.2"
+utils = { path = "../../utils" }

@@ -8,8 +8,8 @@ skip-lint = false
 
 [programs]
 [programs.localnet]
-demo_program = "Ed6FZS4cpdTPrqoFihR3QciyhaqS2FedHRDs46bDb2Zs"
 marketplace = "HYLnmvP84H2xnoVq1RSduzvdBVSibs3ZyxNfK6ak8VwL"
+marketplace_transfer_controller = "Bi2dB1dvse6p9nEDSseRC2qgnWXWFHadFSTxTjc4f5EF"
 
 [registry]
 url = "https://api.apr.dev"
@@ -20,9 +20,8 @@ wallet = "~/.config/solana/deployer.json"
 
 [scripts]
 test = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/**/*.test.ts"
-demo_program = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/demo-program.test.ts"
-marketplace = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/marketplace.test.ts"
+marketplace = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/marketplace/**/*.test.ts"
 
 [workspace]
-members = [ "rust/track-r5/marketplace", "rust/demo-program" ]
+members = [ "rust/track-r5/*" ]
 types = "protocol/src/idl"

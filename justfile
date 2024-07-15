@@ -43,3 +43,6 @@ copy-idl:
 
 update-deps:
     cargo update -p solana-zk-token-sdk@2.0.1 --precise 1.18.17
+
+run-validator:
+    solana-test-validator --reset --bpf-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb ./spl/spl_token_2022.so

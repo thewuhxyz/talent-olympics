@@ -1,5 +1,4 @@
-import { type DemoProgram } from "./demo_program"
-import DemoProgramIDLJson from "./demo_program.json"
 import { type Marketplace } from "./marketplace"
+import { type MarketplaceTransferController } from "./marketplace_transfer_controller"
 
-export { type DemoProgram, DemoProgramIDLJson, type Marketplace }
+export { type Marketplace, type MarketplaceTransferController }

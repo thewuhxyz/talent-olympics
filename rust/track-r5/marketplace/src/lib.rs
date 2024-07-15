@@ -2,7 +2,6 @@ pub mod constants;
 pub mod error;
 pub mod instructions;
 pub mod state;
-pub mod utils;
 
 use anchor_lang::prelude::*;
 use instructions::*;
@@ -23,5 +22,21 @@ pub mod marketplace {
 
     pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
         instructions::buy_service(ctx)
+    }
+
+    pub fn relist_service(ctx: Context<Relist>) -> Result<()> {
+        instructions::relist(ctx)
+    }
+
+    pub fn unlist_service(ctx: Context<Unlist>) -> Result<()> {
+        instructions::unlist(ctx)
+    }
+
+    pub fn resell_service<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Result<()> {
+        instructions::resell(ctx)
+    }
+
+    pub fn royalty_init(ctx: Context<RoyaltyInit>) -> Result<()> {
+        instructions::royalty_init(ctx)
     }
 }

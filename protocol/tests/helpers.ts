@@ -9,3 +9,4 @@ export const explorer = (
 	const clusterUri = cluster === "mainnet" ? "" : `?cluster=${cluster}`
 	return `https://explorer.solana.com/${type}/${data}${clusterUri}`
 }
+

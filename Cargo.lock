@@ -239,7 +239,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04bd077c34449319a1e4e0bc21cea572960c9ae0d0fefda0dd7c52fcc3c647a3"
 dependencies = [
  "anchor-lang",
- "mpl-token-metadata",
  "spl-associated-token-account",
  "spl-pod",
  "spl-token",
@@ -870,19 +869,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "demo-program"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "solana-program",
- "spl-pod",
- "spl-tlv-account-resolution",
- "spl-transfer-hook-interface",
- "spl-type-length-value",
-]
-
-[[package]]
 name = "derivation-path"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1274,10 +1260,25 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "marketplace-transfer-controller",
  "spl-pod",
  "spl-tlv-account-resolution",
  "spl-transfer-hook-interface",
  "spl-type-length-value",
+ "utils",
+]
+
+[[package]]
+name = "marketplace-transfer-controller"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "spl-pod",
+ "spl-tlv-account-resolution",
+ "spl-transfer-hook-interface",
+ "spl-type-length-value",
+ "utils",
 ]
 
 [[package]]
@@ -1314,19 +1315,6 @@ dependencies = [
  "keccak",
  "rand_core 0.6.4",
  "zeroize",
-]
-
-[[package]]
-name = "mpl-token-metadata"
-version = "4.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "caf0f61b553e424a6234af1268456972ee66c2222e1da89079242251fa7479e5"
-dependencies = [
- "borsh 0.10.3",
- "num-derive 0.3.3",
- "num-traits",
- "solana-program",
- "thiserror",
 ]
 
 [[package]]
@@ -2547,6 +2535,18 @@ checksum = "0200d0fc04d809396c2ad43f3c95da3582a2556eba8d453c1087f4120ee352ff"
 dependencies = [
  "fnv",
  "lazy_static",
+]
+
+[[package]]
+name = "utils"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "spl-pod",
+ "spl-tlv-account-resolution",
+ "spl-transfer-hook-interface",
+ "spl-type-length-value",
 ]
 
 [[package]]

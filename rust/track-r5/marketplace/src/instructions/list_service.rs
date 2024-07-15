@@ -1,20 +1,18 @@
 use anchor_lang::prelude::*;
 
+use crate::{
+    constants::SERVICE_ACCOUNT_SEEDS,
+    state::{ServiceAccount, ServiceAgreement},
+};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_2022::spl_token_2022::instruction::AuthorityType,
     token_interface::{Mint, Token2022, TokenAccount},
 };
-
-use crate::{
-    constants::SERVICE_ACCOUNT_SEEDS,
-    state::{ServiceAccount, ServiceAgreement},
-    utils::{
-        initialize_token_group_extension, initialize_token_metadata_extension,
-        mint_to_token_account, set_account_or_mint_authority,
-        update_account_lamports_to_minimum_balance, update_token_metadata_extension_authority,
-        update_token_metadata_extension_field,
-    },
+use utils::{
+    initialize_token_group_extension, initialize_token_metadata_extension, mint_to_token_account,
+    set_account_or_mint_authority, update_account_lamports_to_minimum_balance,
+    update_token_metadata_extension_authority, update_token_metadata_extension_field,
 };
 
 #[derive(Accounts)]
@@ -69,6 +67,7 @@ pub fn list_service(
     service_agreement_config: ServiceAgreementConfig,
 ) -> Result<()> {
     let service_mint = &ctx.accounts.service_mint;
+    let service_account = &ctx.accounts.service_account;
     let service_token_account = &ctx.accounts.service_token_account;
     let provider = &ctx.accounts.provider;
     let payer = &ctx.accounts.payer;
@@ -80,7 +79,7 @@ pub fn list_service(
         service_mint,
         service_mint,
         payer,
-        None,
+        Some(service_account.key()),
         token_program,
         None,
     )?;

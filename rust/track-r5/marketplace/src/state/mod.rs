@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
-use crate::{error::ErrorCode, utils::get_mint_extensible_extension_data};
+use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::spl_token_metadata_interface::state::TokenMetadata;
+use utils;
 
 #[account]
 #[derive(InitSpace, PartialEq)]
@@ -10,30 +11,23 @@ pub struct ServiceAccount {
     pub provider: Pubkey,
     pub service_mint: Pubkey,
     pub bump: u8,
+    pub is_sale: bool,
+    pub is_listed: bool,
+    pub is_initialized: bool,
 }
 
 impl ServiceAccount {
     pub fn init(&mut self, authority: Pubkey, service_mint: Pubkey, bump: u8) -> Result<()> {
-        // if self == &mut ServiceAccount::default() {
-        //     return Err(error!(ErrorCode::ServiceAccountAlreadyInitialized));
-        // }
-
         self.provider = authority;
         self.service_mint = service_mint;
         self.bump = bump;
+        self.is_initialized = true;
+        self.is_listed = false;
+        self.is_sale = false;
+
         Ok(())
     }
 }
-
-// impl Default for ServiceAccount {
-//     fn default() -> Self {
-//         ServiceAccount {
-//             provider: Pubkey::default(),
-//             service_mint: Pubkey::default(),
-//             bump: 0,
-//         }
-//     }
-// }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ServiceAgreement {
@@ -52,8 +46,14 @@ pub struct ServiceAgreement {
 impl ServiceAgreement {
     pub fn to_additional_metadata(&self) -> Vec<(String, String)> {
         vec![
-            (Self::PROVIDER_KEY.to_string(), self.provider.to_string().clone()),
-            (Self::RECEIVER_KEY.to_string(), self.receiver.to_string().clone()),
+            (
+                Self::PROVIDER_KEY.to_string(),
+                self.provider.to_string().clone(),
+            ),
+            (
+                Self::RECEIVER_KEY.to_string(),
+                self.receiver.to_string().clone(),
+            ),
             (Self::DESCRIPTION_KEY.to_string(), self.description.clone()),
             (Self::PRICE_KEY.to_string(), self.price.to_string()),
             (
@@ -71,6 +71,21 @@ impl ServiceAgreement {
         ]
     }
 
+    pub fn royalties_split(&self) -> Result<(u64, u64)> {
+        if let Some(numerator) =
+            u128::from(self.price).checked_mul(u128::from(self.fee_basis_points))
+        {
+            if let Some(provider_fee_u128) = numerator.checked_div(10000) {
+                let provider_fee = u64::try_from(provider_fee_u128)?;
+
+                if let Some(reseller_fee) = self.price.checked_sub(provider_fee) {
+                    return Ok((reseller_fee, provider_fee));
+                };
+            }
+        };
+        err!(ErrorCode::OverflowOccurred)
+    }
+
     pub const DESCRIPTION_KEY: &'static str = "description";
     pub const PRICE_KEY: &'static str = "price";
     pub const FEE_BASIS_POINTS_KEY: &'static str = "fee-basis-points";
@@ -84,7 +99,7 @@ impl TryFrom<AccountInfo<'_>> for ServiceAgreement {
     type Error = Error;
 
     fn try_from(mut account_info: AccountInfo) -> Result<Self> {
-        let metadata = get_mint_extensible_extension_data::<TokenMetadata>(&mut account_info)?;
+        let metadata = utils::get_mint_extensible_extension_data::<TokenMetadata>(&mut account_info)?;
         let additional_metadata = metadata.additional_metadata;
 
         let name = metadata.name;

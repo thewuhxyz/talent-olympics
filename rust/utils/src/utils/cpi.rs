@@ -3,22 +3,139 @@ use anchor_lang::{
     system_program::{self, CreateAccount},
 };
 use anchor_spl::{
+    associated_token::{self, Create},
     token_2022::spl_token_2022::{extension::ExtensionType, instruction::AuthorityType},
     token_interface::{
         group_member_pointer_initialize, group_pointer_initialize, initialize_mint2,
         metadata_pointer_initialize, mint_to, non_transferable_mint_initialize, set_authority,
         spl_token_metadata_interface::state::Field, token_group_initialize,
         token_member_initialize, token_metadata_initialize, token_metadata_update_authority,
-        token_metadata_update_field, transfer_fee_initialize, GroupMemberPointerInitialize,
-        GroupPointerInitialize, InitializeMint2, MetadataPointerInitialize, MintTo,
-        NonTransferableMintInitialize, SetAuthority, TokenGroupInitialize, TokenMemberInitialize,
-        TokenMetadataInitialize, TokenMetadataUpdateAuthority, TokenMetadataUpdateField,
-        TransferFeeInitialize,
+        token_metadata_update_field, transfer_fee_initialize, transfer_hook_initialize,
+        GroupMemberPointerInitialize, GroupPointerInitialize, InitializeMint2,
+        MetadataPointerInitialize, MintTo, NonTransferableMintInitialize, SetAuthority,
+        TokenGroupInitialize, TokenMemberInitialize, TokenMetadataInitialize,
+        TokenMetadataUpdateAuthority, TokenMetadataUpdateField, TransferFeeInitialize,
+        TransferHookInitialize,
     },
 };
 use spl_pod::optional_keys::OptionalNonZeroPubkey;
+use spl_tlv_account_resolution::{account::ExtraAccountMeta, state::ExtraAccountMetaList};
 
 use super::get_mint_space;
+
+pub fn system_program_create_account<
+    'info,
+    P: ToAccountInfo<'info>,
+    A: ToAccountInfo<'info>,
+    T: ToAccountInfo<'info>,
+    M: ToAccountInfo<'info>,
+>(
+    lamports: u64,
+    space: u64,
+    from: &A,
+    to: &M,
+    owner_program: &T,
+    system_program: &P,
+    signer_seeds: Option<&[&[u8]]>,
+) -> Result<()> {
+    let cpi_accounts = CreateAccount {
+        from: from.to_account_info(),
+        to: to.to_account_info(),
+    };
+    let cpi_program = system_program.to_account_info();
+    let ctx = CpiContext::new(cpi_program, cpi_accounts);
+
+    if let Some(seeds) = signer_seeds {
+        system_program::create_account(
+            ctx.with_signer(&[seeds]),
+            lamports,
+            space,
+            owner_program.to_account_info().key,
+        )
+    } else {
+        system_program::create_account(ctx, lamports, space, owner_program.to_account_info().key)
+    }
+}
+
+pub fn create_associated_token_account_idempotent<
+    'info,
+    P: ToAccountInfo<'info>,
+    S: ToAccountInfo<'info>,
+    A: ToAccountInfo<'info>,
+    T: ToAccountInfo<'info>,
+    M: ToAccountInfo<'info>,
+    R: ToAccountInfo<'info>,
+    L: ToAccountInfo<'info>,
+>(
+    associated_token_account: &L,
+    authority: &A,
+    mint: &M,
+    payer: &R,
+    token_program: &T,
+    system_program: &S,
+    associated_token_program: &P,
+    signer_seeds: Option<&[&[u8]]>,
+) -> Result<()> {
+    let cpi_accounts = Create {
+        associated_token: associated_token_account.to_account_info(),
+        authority: authority.to_account_info(),
+        mint: mint.to_account_info(),
+        payer: payer.to_account_info(),
+        system_program: system_program.to_account_info(),
+        token_program: token_program.to_account_info(),
+    };
+    let cpi_program = associated_token_program.to_account_info();
+    let ctx = CpiContext::new(cpi_program, cpi_accounts);
+
+    if let Some(seeds) = signer_seeds {
+        associated_token::create_idempotent(ctx.with_signer(&[seeds]))
+    } else {
+        associated_token::create_idempotent(ctx)
+    }
+}
+
+pub fn create_uninitialized_extra_account_metas_account<
+    'info,
+    P: ToAccountInfo<'info>,
+    A: ToAccountInfo<'info>,
+    T: ToAccountInfo<'info>,
+    M: ToAccountInfo<'info>,
+>(
+    account_metas: &[ExtraAccountMeta],
+    extra_account_metas_account: &M,
+    mint: &M,
+    payer: &A,
+    transfer_hook_program_id: &T,
+    system_program: &P,
+) -> Result<()> {
+    let space = ExtraAccountMetaList::size_of(account_metas.len())? as u64;
+    // calculate minimum required lamports
+    let lamports = Rent::get()?.minimum_balance(space as usize);
+
+    let mint_key = mint.to_account_info().key();
+
+    let (extra_account_metas_key, bump) = Pubkey::find_program_address(
+        &[b"extra-account-metas", mint_key.as_ref()],
+        &transfer_hook_program_id.to_account_info().key(),
+    );
+
+    require_eq!(
+        extra_account_metas_key,
+        extra_account_metas_account.to_account_info().key()
+    );
+
+    let signer_seeds = &[b"extra-account-metas", mint_key.as_ref(), &[bump]];
+
+    system_program_create_account(
+        lamports,
+        space,
+        payer,
+        extra_account_metas_account,
+        transfer_hook_program_id,
+        system_program,
+        Some(signer_seeds),
+    )
+}
 
 pub fn create_uninitialized_mint_account<
     'info,
@@ -33,19 +150,17 @@ pub fn create_uninitialized_mint_account<
     token_program: &T,
     system_program: &P,
 ) -> Result<()> {
-    let cpi_accounts = CreateAccount {
-        from: payer.to_account_info(),
-        to: mint.to_account_info(),
-    };
-    let cpi_program = system_program.to_account_info();
-    let ctx = CpiContext::new(cpi_program, cpi_accounts);
-
-    // get_account_data_size(token_program_id, mint_pubkey, extension_types);
-
     let (space, lamports) = get_mint_space(extension_types)?;
 
-    // get_mint
-    system_program::create_account(ctx, lamports, space, token_program.to_account_info().key)
+    system_program_create_account(
+        lamports,
+        space,
+        payer,
+        mint,
+        token_program,
+        system_program,
+        None,
+    )
 }
 
 pub fn initialize_non_transferrable_extension<
@@ -205,6 +320,26 @@ pub fn initialize_token_metadata_extension<
         CpiContext::new(token_program.to_account_info(), initialize_cpi_accounts);
 
     token_metadata_initialize(initialize_cpi_ctx, name, symbol, uri)
+}
+
+pub fn initialize_transfer_hook_extension<
+    'info,
+    P: ToAccountInfo<'info>,
+    M: ToAccountInfo<'info>,
+>(
+    authority: Option<Pubkey>,
+    transfer_hook_program_id: Option<Pubkey>,
+    mint: &M,
+    token_program: &P,
+) -> Result<()> {
+    let initialize_cpi_accounts = TransferHookInitialize {
+        token_program_id: token_program.to_account_info(),
+        mint: mint.to_account_info(),
+    };
+    let initialize_cpi_ctx =
+        CpiContext::new(token_program.to_account_info(), initialize_cpi_accounts);
+
+    transfer_hook_initialize(initialize_cpi_ctx, authority, transfer_hook_program_id)
 }
 
 pub fn update_token_metadata_extension_field<

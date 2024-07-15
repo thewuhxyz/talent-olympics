@@ -1,11 +1,13 @@
 import * as anchor from "@coral-xyz/anchor"
 import { AnchorProvider, Program } from "@coral-xyz/anchor"
-import { Marketplace } from "../src"
-import { sleep, explorer } from "./helpers"
-import { assert } from "chai"
+import { Marketplace, MarketplaceTransferController } from "../../src"
+import { sleep, explorer } from "../helpers"
+import { assert, should } from "chai"
 import {
 	ASSOCIATED_TOKEN_PROGRAM_ID,
+	NATIVE_MINT,
 	TOKEN_2022_PROGRAM_ID,
+	TOKEN_PROGRAM_ID,
 	getAssociatedTokenAddressSync,
 } from "@solana/spl-token"
 import {
@@ -13,30 +15,45 @@ import {
 	Keypair,
 	LAMPORTS_PER_SOL,
 	SystemProgram,
-	SYSVAR_RENT_PUBKEY,
 	ComputeBudgetProgram,
 } from "@solana/web3.js"
+import { MarketplaceHelpers, SERVICE_ACCOUNT_SEEDS } from "./helpers"
 
-describe("demo_program", () => {
+describe("Marketplace: Non-transferable", () => {
 	const provider = AnchorProvider.env()
 	const connection = provider.connection
 
 	const program = anchor.workspace.Marketplace as Program<Marketplace>
+	const transfer_controller = anchor.workspace
+		.MarketplaceTransferController as Program<MarketplaceTransferController>
 
-	const serviceProvider = Keypair.generate()
-	const serviceReceiver = Keypair.generate()
+	const transfer_hook_program_id = transfer_controller.programId
+
 	const service_mint = Keypair.generate()
 	const service_ticket_mint = Keypair.generate()
+
+	const serviceProvider = Keypair.generate()
+	const serviceReseller = Keypair.generate()
+	const serviceReceiver = Keypair.generate()
 
 	console.log("👉 program id:", program.programId.toBase58())
 
 	console.log("👉 service provider:", serviceProvider.publicKey.toBase58())
+
+	console.log("👉 service reseller:", serviceReseller.publicKey.toBase58())
+
 	console.log("👉 service receiver:", serviceReceiver.publicKey.toBase58())
 
-	const SERVICE_ACCOUNT_SEEDS = "service-account"
+	const wsol = (owner: PublicKey) =>
+		getAssociatedTokenAddressSync(NATIVE_MINT, owner, true, TOKEN_PROGRAM_ID)
 
 	const service_token = (owner: PublicKey) =>
-		getAssociatedTokenAddressSync(service_mint.publicKey, owner, true, TOKEN_2022_PROGRAM_ID)
+		getAssociatedTokenAddressSync(
+			service_mint.publicKey,
+			owner,
+			true,
+			TOKEN_2022_PROGRAM_ID
+		)
 
 	const service_ticket_token = (owner: PublicKey) =>
 		getAssociatedTokenAddressSync(
@@ -52,11 +69,30 @@ describe("demo_program", () => {
 			program.programId
 		)[0]
 
+	const [extraAccountMetaListPDA] = PublicKey.findProgramAddressSync(
+		[
+			Buffer.from("extra-account-metas"),
+			service_ticket_mint.publicKey.toBuffer(),
+		],
+		transfer_hook_program_id
+	)
+
+	const [mintRoyaltyConfig] = PublicKey.findProgramAddressSync(
+		[service_ticket_mint.publicKey.toBuffer()],
+		transfer_hook_program_id
+	)
+
 	before(async () => {
 		console.log("---- airdroping token ----")
 
 		let tx = await connection.requestAirdrop(
 			serviceProvider.publicKey,
+			1 * anchor.web3.LAMPORTS_PER_SOL
+		)
+		console.log("✅ Transaction successful", tx)
+
+		tx = await connection.requestAirdrop(
+			serviceReseller.publicKey,
 			1 * anchor.web3.LAMPORTS_PER_SOL
 		)
 		console.log("✅ Transaction successful", tx)
@@ -70,12 +106,8 @@ describe("demo_program", () => {
 		await sleep(3)
 	})
 
-	it("creates a service", async () => {
+	it("lists a non-transferable service", async () => {
 		console.log("---- creating a service ----")
-
-		const token = service_token(serviceProvider.publicKey)
-
-		console.log("token account:", token)
 
 		let tx = await program.methods
 			.listService({
@@ -83,16 +115,15 @@ describe("demo_program", () => {
 				description: "description of my service",
 				feeBasisPoints: 1000,
 				maximumFee: new anchor.BN(LAMPORTS_PER_SOL * 1000),
-				price: new anchor.BN(LAMPORTS_PER_SOL * 0.1),
+				price: new anchor.BN(LAMPORTS_PER_SOL * 0.01),
 				symbol: "SERV",
-				transferable: true,
-				uri: "some_url.json",
+				transferable: false,
+				uri: "https://dev.thewuh.xyz/avatar.jpg",
 			})
 			.accountsStrict({
 				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
 				payer: serviceProvider.publicKey,
 				provider: serviceProvider.publicKey,
-				// rent: SYSVAR_RENT_PUBKEY,
 				serviceAccount: servicePda(service_mint.publicKey),
 				serviceMint: service_mint.publicKey,
 				serviceTokenAccount: service_token(serviceProvider.publicKey),
@@ -107,10 +138,7 @@ describe("demo_program", () => {
 			])
 			.rpc({ skipPreflight: true })
 
-		console.log(
-			"✅ Transaction successful",
-			explorer(tx, "tx", "custom")
-		)
+		console.log("✅ Transaction successful", explorer(tx, "tx", "custom"))
 
 		console.log(
 			"👉 Mint Account",
@@ -119,13 +147,13 @@ describe("demo_program", () => {
 
 		console.log(
 			"👉 Token Account",
-			explorer(token.toBase58(), "address", "custom")
+			explorer(serviceProvider.publicKey.toBase58(), "address", "custom")
 		)
 
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_mint.publicKey)
+			MarketplaceHelpers.servicePda(service_mint.publicKey, program.programId)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
@@ -140,4 +168,6 @@ describe("demo_program", () => {
 			"authority does not match"
 		)
 	})
+
+	
 })
