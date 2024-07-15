@@ -623,10 +623,6 @@ export type Marketplace = {
           "name": "wsolMint"
         },
         {
-          "name": "mintRoyaltyWsolTokenAccount",
-          "writable": true
-        },
-        {
           "name": "resellerWsolTokenAccount",
           "writable": true,
           "pda": {

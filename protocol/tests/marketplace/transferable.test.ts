@@ -322,7 +322,6 @@ describe("Marketplace: Transferable", () => {
 					systemProgram: SystemProgram.programId,
 					extraAccountMetasList: extraAccountMetaListPDA,
 					mintRoyaltyConfig,
-					mintRoyaltyWsolTokenAccount: wsol(mintRoyaltyConfig),
 					providerWsolTokenAccount: wsol(serviceProvider.publicKey),
 					tokenProgramClassic: TOKEN_PROGRAM_ID,
 					wsolMint: NATIVE_MINT,

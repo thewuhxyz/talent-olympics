@@ -617,10 +617,6 @@
           "name": "wsol_mint"
         },
         {
-          "name": "mint_royalty_wsol_token_account",
-          "writable": true
-        },
-        {
           "name": "reseller_wsol_token_account",
           "writable": true,
           "pda": {

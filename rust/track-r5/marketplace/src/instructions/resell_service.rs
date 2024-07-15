@@ -65,9 +65,7 @@ pub struct Resell<'info> {
     
     /// CHECK:...
     pub wsol_mint: UncheckedAccount<'info>,
-    /// CHECK:...
-    #[account(mut)]
-    pub mint_royalty_wsol_token_account: UncheckedAccount<'info>,
+
     /// CHECK:...
     #[account(
         init_if_needed,
@@ -122,7 +120,6 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
     let extra_account_metas_list = &ctx.accounts.extra_account_metas_list;
     let token_program_classic = &ctx.accounts.token_program_classic;
     let transfer_hook_program = &ctx.accounts.transfer_hook_program;
-    let mint_royalty_wsol_token_account = &ctx.accounts.mint_royalty_wsol_token_account;
     let reseller_wsol_token_account = &ctx.accounts.reseller_wsol_token_account;
     let provider_wsol_token_account = &ctx.accounts.provider_wsol_token_account;
     let mint_royalty_config = &ctx.accounts.mint_royalty_config;
@@ -132,10 +129,17 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
     let (reseller_amount, provider_amount) = ServiceAgreement::try_from(service_ticket.to_account_info())?.royalties_split()?;
 
     utils::system_program_transfer(
-        reseller_amount + provider_amount, 
+        reseller_amount, 
         system_program, 
         payer, 
-        &mint_royalty_wsol_token_account.to_account_info()
+        &reseller_wsol_token_account.to_account_info()
+    )?;
+    
+    utils::system_program_transfer(
+        provider_amount, 
+        system_program, 
+        payer, 
+        &provider_wsol_token_account.to_account_info()
     )?;
 
     token_2022::spl_token_2022::onchain::invoke_transfer_checked(
