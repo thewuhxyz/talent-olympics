@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 
 #[derive(Accounts)]
-pub struct RoyaltyUpdate<'info> {
+pub struct RoyaltyConfigUpdate<'info> {
     /// CHECK: mint account, yet to be initialized
     #[account()]
     pub service_ticket_mint: InterfaceAccount<'info, Mint>,
@@ -21,7 +21,7 @@ pub struct RoyaltyUpdate<'info> {
     pub mint_royalty_config: Account<'info, MintRoyaltyConfig>,
 }
 
-pub fn royalty_update(ctx: Context<RoyaltyUpdate>, is_selling: bool) -> Result<()> {
+pub fn royalty_config_update(ctx: Context<RoyaltyConfigUpdate>, is_selling: bool) -> Result<()> {
     ctx.accounts.mint_royalty_config.is_selling = is_selling;
     Ok(())
 }

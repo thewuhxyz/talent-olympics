@@ -1,11 +1,11 @@
-pub mod royalty_init;
-pub mod royalty_init_extra_metas;
-pub mod royalty_update;
-pub mod royalties;
-pub mod fallback;
+pub mod royalty_config_init;
+pub mod royalty_config_update;
+pub mod transfer_control;
+pub mod transfer_control_fallback;
+pub mod transfer_control_init;
 
-pub use royalty_init::*;
-pub use royalty_init_extra_metas::*;
-pub use royalty_update::*;
-pub use royalties::*;
-pub use fallback::*;
+pub use royalty_config_init::*;
+pub use royalty_config_update::*;
+pub use transfer_control::*;
+pub use transfer_control_fallback::*;
+pub use transfer_control_init::*;

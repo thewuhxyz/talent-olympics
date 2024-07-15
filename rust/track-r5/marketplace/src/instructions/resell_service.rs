@@ -3,7 +3,7 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::AssociatedToken, token_2022::{self, Token2022}, token_interface::{Mint, TokenAccount}
+    associated_token::AssociatedToken, token_2022::{self, Token2022}, token_interface::{Mint, TokenAccount as ITokenAccount}, token::TokenAccount
 };
 use utils;
 
@@ -16,7 +16,7 @@ pub struct Resell<'info> {
         associated_token::mint = service_ticket_mint,
         associated_token::authority = reseller,
     )]
-    pub reseller_service_ticket_token: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub reseller_service_ticket_token: Box<InterfaceAccount<'info, ITokenAccount>>,
     
     #[account(
         init_if_needed,
@@ -25,17 +25,13 @@ pub struct Resell<'info> {
         associated_token::mint = service_ticket_mint,
         associated_token::authority = payer,
     )]
-    pub payer_service_ticket_token: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub payer_service_ticket_token: Box<InterfaceAccount<'info, ITokenAccount>>,
 
     /// CHECK: mint account, yet to be initialized
     #[account(
         mut,
-        // extensions::transfer_hook::program_id = crate::ID,
     )]
     pub service_ticket_mint: Box<InterfaceAccount<'info, Mint>>,
-    
-    // #[account()]
-    // pub service_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
@@ -47,6 +43,10 @@ pub struct Resell<'info> {
     )]
     pub service_account: Box<Account<'info, ServiceAccount>>,
     
+    /// CHECK: receiver of the service nft
+    #[account()]
+    pub provider: Signer<'info>,
+
     /// CHECK: receiver of the service nft
     #[account()]
     pub reseller: Signer<'info>,
@@ -69,9 +69,24 @@ pub struct Resell<'info> {
     #[account(mut)]
     pub mint_royalty_wsol_token_account: UncheckedAccount<'info>,
     /// CHECK:...
-    pub reseller_wsol_token_account: UncheckedAccount<'info>,
+    #[account(
+        init_if_needed,
+        payer=payer,
+        associated_token::token_program=token_program_classic,
+        associated_token::authority=reseller,
+        associated_token::mint=wsol_mint,
+    )]
+    pub reseller_wsol_token_account: Box<Account<'info, TokenAccount>>,
+    
     /// CHECK:...
-    pub provider_wsol_token_account: UncheckedAccount<'info>,
+    #[account(
+        init_if_needed,
+        payer=payer,
+        associated_token::token_program=token_program_classic,
+        associated_token::authority=provider,
+        associated_token::mint=wsol_mint,
+    )]
+    pub provider_wsol_token_account: Box<Account<'info, TokenAccount>>,
     /// CHECK:...
     #[account(
         mut
@@ -87,7 +102,7 @@ pub struct Resell<'info> {
     
     /// CHECK:...
     #[account(executable)]
-    pub transfer_hook_program_id: UncheckedAccount<'info>,
+    pub transfer_hook_program: UncheckedAccount<'info>,
 
     /// CHECK:...
     #[account(executable)]
@@ -106,9 +121,7 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
     let reseller = &ctx.accounts.reseller;
     let extra_account_metas_list = &ctx.accounts.extra_account_metas_list;
     let token_program_classic = &ctx.accounts.token_program_classic;
-    let transfer_hook_program_id = &ctx.accounts.transfer_hook_program_id;
-    let associated_token_program = &ctx.accounts.associated_token_program;
-    let wsol_mint = &ctx.accounts.wsol_mint;
+    let transfer_hook_program = &ctx.accounts.transfer_hook_program;
     let mint_royalty_wsol_token_account = &ctx.accounts.mint_royalty_wsol_token_account;
     let reseller_wsol_token_account = &ctx.accounts.reseller_wsol_token_account;
     let provider_wsol_token_account = &ctx.accounts.provider_wsol_token_account;
@@ -134,35 +147,26 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
         &[
             extra_account_metas_list.to_account_info(),
             mint_royalty_config.to_account_info(),
-            provider_wsol_token_account.to_account_info(),
-            reseller_wsol_token_account.to_account_info(),
-            mint_royalty_wsol_token_account.to_account_info(),
-            wsol_mint.to_account_info(),
-            token_program_classic.to_account_info(),
-            associated_token_program.to_account_info(),
-            transfer_hook_program_id.clone().to_account_info(),
+            transfer_hook_program.clone().to_account_info(),
             ],
         1,
         service_ticket.decimals,
         &[],
     )?;
 
-
-    utils::token_sync_native(&**provider_wsol_token_account, token_program)?;
-    utils::token_sync_native(&**reseller_wsol_token_account, token_program)?;
-
+    utils::token_sync_native(&**provider_wsol_token_account, token_program_classic)?;
+    utils::token_sync_native(&**reseller_wsol_token_account, token_program_classic)?;
 
     update_royalty_config(&ctx, false)?;
-    
     Ok(())
 }
 
 
 fn update_royalty_config(ctx: &Context<Resell>, is_selling: bool) -> Result<()> {
-    marketplace_transfer_controller::cpi::royalty_update(
+    marketplace_transfer_controller::cpi::royalty_config_update(
         CpiContext::new_with_signer(
-            ctx.accounts.transfer_hook_program_id.to_account_info(), 
-            marketplace_transfer_controller::cpi::accounts::RoyaltyUpdate {
+            ctx.accounts.transfer_hook_program.to_account_info(), 
+            marketplace_transfer_controller::cpi::accounts::RoyaltyConfigUpdate {
                 mint_royalty_config: ctx.accounts.mint_royalty_config.to_account_info(),
                 service_account: ctx.accounts.service_account.to_account_info(),
                 service_ticket_mint: ctx.accounts.service_ticket_mint.to_account_info(),

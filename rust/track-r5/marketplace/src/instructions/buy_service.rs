@@ -65,10 +65,6 @@ pub struct BuyService<'info> {
 
     /// CHECK: Program ID
     #[account(executable)]
-    pub program_id: UncheckedAccount<'info>,
-
-    /// CHECK: Program ID
-    #[account(executable)]
     pub transfer_hook_program: UncheckedAccount<'info>,
 
     /// CHECK: Program ID
@@ -80,18 +76,11 @@ pub struct BuyService<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 
     pub token_program: Program<'info, Token2022>,
-    /// CHECK:...
-    pub provider_wsol_token_account: UncheckedAccount<'info>,
-    /// CHECK:...
-    pub wsol_mint: UncheckedAccount<'info>,
-    /// CHECK:...
-    pub token_program_classic: UncheckedAccount<'info>,
 }
 
 pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
     let service_ticket_mint = &mut ctx.accounts.service_ticket_mint;
     let token_program = &ctx.accounts.token_program;
-    let token_program_classic = &ctx.accounts.token_program_classic;
     let provider_service_account = &mut ctx.accounts.provider_service_account;
     let buyer_service_account = &mut ctx.accounts.buyer_service_account;
     let service = &ctx.accounts.service_mint;
@@ -103,8 +92,6 @@ pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
     let transfer_hook_program = &ctx.accounts.transfer_hook_program;
     let buyer = &ctx.accounts.buyer;
     let associated_token_program = &ctx.accounts.associated_token_program;
-    let provider_wsol_token_account = &ctx.accounts.provider_wsol_token_account;
-    let wsol_mint = &ctx.accounts.wsol_mint;
 
     let (service_account_key, _) = Pubkey::find_program_address(
         &[SERVICE_ACCOUNT_SEEDS.as_ref(), service.key().as_ref()],
@@ -169,17 +156,12 @@ pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
     utils::create_initialized_mint(0, service_ticket_mint, buyer, None, token_program)?;
 
     if service_agreement.transferable {
-        initialize_royalty_config(
+        initialize_transfer_controller(
             extra_account_metas_list,
             buyer,
-            &buyer_service_account.to_account_info(),
             service_ticket_mint,
-            provider_wsol_token_account,
-            wsol_mint,
             transfer_hook_program,
             transfer_hook_program_account,
-            associated_token_program,
-            token_program_classic,
             system_program,
         )?;
     }
@@ -270,34 +252,24 @@ pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
     Ok(())
 }
 
-fn initialize_royalty_config<'info>(
+fn initialize_transfer_controller<'info>(
     extra_account_metas_list: &AccountInfo<'info>,
     payer: &AccountInfo<'info>,
-    service_account: &AccountInfo<'info>,
     service_ticket_mint: &AccountInfo<'info>,
-    provider_wsol_token_account: &AccountInfo<'info>,
-    wsol_mint: &AccountInfo<'info>,
     transfer_hook_program: &AccountInfo<'info>,
     transfer_hook_program_account: &AccountInfo<'info>,
-    associated_token_program: &AccountInfo<'info>,
-    token_program_classic: &AccountInfo<'info>,
     system_program: &AccountInfo<'info>,
     // signer_seeds: &[&[u8]]
 ) -> Result<()> {
-    transfer_controller::royalty_init_extra_metas(
+    transfer_controller::transfer_control_init(
         CpiContext::new(
             transfer_hook_program_account.to_account_info(),
-            transfer_controller::accounts::RoyaltyInitExtraMetas {
+            transfer_controller::accounts::TransferControlInit {
                 extra_account_metas_list: extra_account_metas_list.to_account_info(),
                 payer: payer.to_account_info(),
                 transfer_hook_program_id: transfer_hook_program.to_account_info(),
                 system_program: system_program.to_account_info(),
-                associated_token_program: associated_token_program.to_account_info(),
-                provider_wsol_token_account: provider_wsol_token_account.to_account_info(),
-                service_account: service_account.to_account_info(),
                 service_ticket_mint: service_ticket_mint.to_account_info(),
-                token_program_classic: token_program_classic.to_account_info(),
-                wsol_mint: wsol_mint.to_account_info(),
             },
         ), // .with_signer(&[signer_seeds])
     )?;

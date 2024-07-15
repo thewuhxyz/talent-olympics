@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{token_2022::spl_token_2022::{extension::{transfer_hook::TransferHookAccount, BaseStateWithExtensionsMut, PodStateWithExtensionsMut}, pod::PodAccount}, token_interface::Mint};
 
-use crate::error::ErrorCode;
+use crate::{error::ErrorCode, state::MintRoyaltyConfig};
 
 #[derive(Accounts)]
-pub struct Royalties<'info> {
+pub struct TransferControl<'info> {
     /// CHECK: Perform no checks
     #[account()]
     pub source_token_account: UncheckedAccount<'info>,
@@ -29,36 +29,26 @@ pub struct Royalties<'info> {
 
     /// CHECK: ...
     #[account()]
-    pub mint_royalty_config: UncheckedAccount<'info>,
-
-    /// CHECK: mint account, yet to be initialized
-    #[account(mut)]
-    pub provider_wsol_token_account: UncheckedAccount<'info>,
-
-    /// CHECK: mint account, yet to be initialized
-    #[account(mut)]
-    pub reseller_wsol_token_account: UncheckedAccount<'info>,
-    /// CHECK: mint account, yet to be initialized
-    #[account(mut)]
-    pub mint_royalty_wsol_token_account: UncheckedAccount<'info>,
-    /// CHECK: mint account, yet to be initialized
-    pub wsol_mint: UncheckedAccount<'info>,
-
-    /// CHECK: mint account, yet to be initialized
-    pub token_program: UncheckedAccount<'info>,
-    /// CHECK: mint account, yet to be initialized
-    pub associated_token_program: UncheckedAccount<'info>,
+    pub mint_royalty_config: Account<'info, MintRoyaltyConfig>,
 }
 
-pub fn royalties(ctx: Context<Royalties>, _amount: u64) -> Result<()> {
-    msg!("in tx hook!");
+pub fn transfer_control(ctx: Context<TransferControl>, _amount: u64) -> Result<()> {
+    ctx.accounts.mint_royalty_config.reload()?;
+    
+    let mint_config = &ctx.accounts.mint_royalty_config;
+
+    let is_selling = &mint_config.is_selling;
 
     assert_is_transferring(&ctx)?;
+
+    msg!("is selling: {is_selling}", );
+
+    if !is_selling {return err!(ErrorCode::TransferOutsideMarketplaceNotAllowed) }
 
     Ok(())
 }
 
-fn assert_is_transferring(ctx: &Context<Royalties>) -> Result<()> {
+fn assert_is_transferring(ctx: &Context<TransferControl>) -> Result<()> {
     let source_token_info = ctx.accounts.source_token_account.to_account_info();
     let mut account_data_ref = source_token_info.try_borrow_mut_data()?;
     let mut account = PodStateWithExtensionsMut::<PodAccount>::unpack(*account_data_ref)?;

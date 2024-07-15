@@ -36,7 +36,7 @@ pub mod marketplace {
         instructions::resell(ctx)
     }
 
-    pub fn royalty_init(ctx: Context<RoyaltyInit>) -> Result<()> {
-        instructions::royalty_init(ctx)
+    pub fn royalties_init(ctx: Context<RoyaltiesInit>) -> Result<()> {
+        instructions::royalties_init(ctx)
     }
 }
