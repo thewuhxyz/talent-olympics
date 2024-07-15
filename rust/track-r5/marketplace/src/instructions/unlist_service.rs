@@ -10,6 +10,7 @@ use anchor_spl::{
 #[derive(Accounts)]
 pub struct Unlist<'info> {
     #[account(
+        mut,
         constraint = service_ticket_token.amount == 1,
         associated_token::token_program = token_program,
         associated_token::mint = service_ticket_mint,
@@ -24,9 +25,6 @@ pub struct Unlist<'info> {
     #[account()]
     pub service_mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
     /// CHECK: receiver of the service nft
     #[account()]
     pub reseller: Signer<'info>,
@@ -40,9 +38,7 @@ pub struct Unlist<'info> {
 
     )]
     pub service_account: Account<'info, ServiceAccount>,
-    
-    pub system_program: Program<'info, System>,
-    
+        
     pub associated_token_program: Program<'info, AssociatedToken>,
     
     pub token_program: Program<'info, Token2022>,
@@ -50,6 +46,17 @@ pub struct Unlist<'info> {
 
 pub fn unlist(ctx: Context<Unlist>) -> Result<()> {
     let service_account = &mut ctx.accounts.service_account;
-    service_account.is_listed = false;
+    let service_ticket_token = &ctx.accounts.service_ticket_token;
+    let reseller = &ctx.accounts.reseller;
+    let token_program = &ctx.accounts.token_program;
+    
+    utils::revoke_delegate(
+        reseller,
+        service_ticket_token, 
+        token_program
+    )?;
+    
+    service_account.unlist();
+
     Ok(())
 }

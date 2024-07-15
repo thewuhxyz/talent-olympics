@@ -322,6 +322,7 @@
       "accounts": [
         {
           "name": "service_ticket_token",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -429,6 +430,9 @@
         {
           "name": "token_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "delegate_signer"
         }
       ],
       "args": []
@@ -561,8 +565,7 @@
           }
         },
         {
-          "name": "service_ticket_mint",
-          "writable": true
+          "name": "service_ticket_mint"
         },
         {
           "name": "service_account",
@@ -598,11 +601,11 @@
         },
         {
           "name": "provider",
-          "signer": true
+          "writable": true
         },
         {
           "name": "reseller",
-          "signer": true
+          "writable": true
         },
         {
           "name": "payer",
@@ -610,133 +613,34 @@
           "signer": true
         },
         {
-          "name": "extra_account_metas_list",
-          "writable": true
-        },
-        {
-          "name": "wsol_mint"
-        },
-        {
-          "name": "mint_royalty_wsol_token_account",
-          "writable": true
-        },
-        {
-          "name": "reseller_wsol_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "reseller"
-              },
-              {
-                "kind": "account",
-                "path": "token_program_classic"
-              },
-              {
-                "kind": "account",
-                "path": "wsol_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "provider_wsol_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "provider"
-              },
-              {
-                "kind": "account",
-                "path": "token_program_classic"
-              },
-              {
-                "kind": "account",
-                "path": "wsol_mint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
           "name": "mint_royalty_config",
           "writable": true
+        },
+        {
+          "name": "delegate_signer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "service_ticket_mint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "transfer_hook_program"
+            }
+          }
         },
         {
           "name": "system_program",
@@ -748,9 +652,6 @@
         },
         {
           "name": "transfer_hook_program"
-        },
-        {
-          "name": "token_program_classic"
         },
         {
           "name": "token_program",
@@ -796,6 +697,33 @@
         },
         {
           "name": "transfer_hook_program"
+        },
+        {
+          "name": "delegate_signer",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "service_ticket_mint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "transfer_hook_program"
+            }
+          }
         }
       ],
       "args": []
@@ -815,6 +743,7 @@
       "accounts": [
         {
           "name": "service_ticket_token",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -876,11 +805,6 @@
           "name": "service_mint"
         },
         {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "reseller",
           "signer": true
         },
@@ -915,10 +839,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
         },
         {
           "name": "associated_token_program",
@@ -980,6 +900,11 @@
     },
     {
       "code": 6006,
+      "name": "IsNotListed",
+      "msg": "The ticket is not listed"
+    },
+    {
+      "code": 6007,
       "name": "OverflowOccurred",
       "msg": "Overflow occurred"
     }
@@ -1001,10 +926,6 @@
           {
             "name": "bump",
             "type": "u8"
-          },
-          {
-            "name": "is_sale",
-            "type": "bool"
           },
           {
             "name": "is_listed",

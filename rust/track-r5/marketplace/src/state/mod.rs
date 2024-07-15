@@ -11,7 +11,6 @@ pub struct ServiceAccount {
     pub holder: Pubkey,
     pub mint: Pubkey,
     pub bump: u8,
-    pub is_sale: bool,
     pub is_listed: bool,
     pub is_initialized: bool,
 }
@@ -23,9 +22,21 @@ impl ServiceAccount {
         self.bump = bump;
         self.is_initialized = true;
         self.is_listed = false;
-        self.is_sale = false;
 
         Ok(())
+    }
+
+    pub fn update_holder(&mut self, new_holder: Pubkey) {
+        self.holder = new_holder;
+        self.is_listed = false;
+    }
+
+    pub fn unlist(&mut self) {
+        self.is_listed = false;
+    }
+    
+    pub fn list(&mut self) {
+        self.is_listed = true;
     }
 }
 

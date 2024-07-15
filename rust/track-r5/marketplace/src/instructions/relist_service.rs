@@ -6,11 +6,10 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token_interface::{Mint, Token2022, TokenAccount},
 };
-
-
 #[derive(Accounts)]
 pub struct Relist<'info> {
     #[account(
+        mut,
         constraint = service_ticket_token.amount == 1,
         associated_token::token_program = token_program,
         associated_token::mint = service_ticket_mint,
@@ -44,10 +43,27 @@ pub struct Relist<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
     
     pub token_program: Program<'info, Token2022>,
+
+    /// CHECK: royalty config
+    pub delegate_signer: UncheckedAccount<'info>,
 }
 
 pub fn relist(ctx: Context<Relist>) -> Result<()> {
     let service_account = &mut ctx.accounts.service_account;
-    service_account.is_listed = true;
+    let service_ticket_token = &ctx.accounts.service_ticket_token;
+    let reseller = &ctx.accounts.reseller;
+    let token_program = &ctx.accounts.token_program;
+    let delegate_signer = &ctx.accounts.delegate_signer;
+    
+    utils::approve_delegate(
+        1, 
+        delegate_signer, 
+        service_ticket_token, 
+        reseller,
+        token_program
+    )?;
+    
+    service_account.list();
+
     Ok(())
 }

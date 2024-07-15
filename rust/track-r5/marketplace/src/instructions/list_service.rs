@@ -143,6 +143,7 @@ pub fn list_service(
         service_mint.key(),
         ctx.bumps.service_account,
     )?;
+    ctx.accounts.service_account.list();
     Ok(())
 }
 

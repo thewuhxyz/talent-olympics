@@ -328,6 +328,7 @@ export type Marketplace = {
       "accounts": [
         {
           "name": "serviceTicketToken",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -435,6 +436,9 @@ export type Marketplace = {
         {
           "name": "tokenProgram",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "delegateSigner"
         }
       ],
       "args": []
@@ -567,8 +571,7 @@ export type Marketplace = {
           }
         },
         {
-          "name": "serviceTicketMint",
-          "writable": true
+          "name": "serviceTicketMint"
         },
         {
           "name": "serviceAccount",
@@ -604,11 +607,11 @@ export type Marketplace = {
         },
         {
           "name": "provider",
-          "signer": true
+          "writable": true
         },
         {
           "name": "reseller",
-          "signer": true
+          "writable": true
         },
         {
           "name": "payer",
@@ -616,133 +619,34 @@ export type Marketplace = {
           "signer": true
         },
         {
-          "name": "extraAccountMetasList",
-          "writable": true
-        },
-        {
-          "name": "wsolMint"
-        },
-        {
-          "name": "mintRoyaltyWsolTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "resellerWsolTokenAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "reseller"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgramClassic"
-              },
-              {
-                "kind": "account",
-                "path": "wsolMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "providerWsolTokenAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "provider"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgramClassic"
-              },
-              {
-                "kind": "account",
-                "path": "wsolMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
           "name": "mintRoyaltyConfig",
           "writable": true
+        },
+        {
+          "name": "delegateSigner",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "serviceTicketMint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "transferHookProgram"
+            }
+          }
         },
         {
           "name": "systemProgram",
@@ -754,9 +658,6 @@ export type Marketplace = {
         },
         {
           "name": "transferHookProgram"
-        },
-        {
-          "name": "tokenProgramClassic"
         },
         {
           "name": "tokenProgram",
@@ -802,6 +703,33 @@ export type Marketplace = {
         },
         {
           "name": "transferHookProgram"
+        },
+        {
+          "name": "delegateSigner",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "serviceTicketMint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "transferHookProgram"
+            }
+          }
         }
       ],
       "args": []
@@ -821,6 +749,7 @@ export type Marketplace = {
       "accounts": [
         {
           "name": "serviceTicketToken",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -882,11 +811,6 @@ export type Marketplace = {
           "name": "serviceMint"
         },
         {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "reseller",
           "signer": true
         },
@@ -921,10 +845,6 @@ export type Marketplace = {
               }
             ]
           }
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
         },
         {
           "name": "associatedTokenProgram",
@@ -986,6 +906,11 @@ export type Marketplace = {
     },
     {
       "code": 6006,
+      "name": "isNotListed",
+      "msg": "The ticket is not listed"
+    },
+    {
+      "code": 6007,
       "name": "overflowOccurred",
       "msg": "Overflow occurred"
     }
@@ -1007,10 +932,6 @@ export type Marketplace = {
           {
             "name": "bump",
             "type": "u8"
-          },
-          {
-            "name": "isSale",
-            "type": "bool"
           },
           {
             "name": "isListed",
