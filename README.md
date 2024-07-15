@@ -1,60 +1,68 @@
 # Create Anchor dApp
 
-This is a [Turborepo](https://turbo.build/repo) monorepo for managing your Solana projects built with the anchor framework. If you are new to turborepo, you can start by reading the [docs](https://turbo.build/repo/docs).
+This is a starter template generated from [Create-Anchor-dApp](https://www.npmjs.com/package/create-anchor-dapp) monorepo CLI generator build by The Wuh.
 
-We would be using `pnpm` for the sake of this doc, but you can follow along with your favorite package manager.
 
 ## Quickstart
 
-in your project directory, run:
+Start by:
 
 ```sh
-solana-test-validator
+pnpm run:validator
 ```
 ```sh
-pnpm program:deploy-all
+pnpm build
 ```
 ```sh
-pnpm program:test-all
+just deploy-all
 ```
 ```sh
-pnpm build:protocol
+just test marketplace
 ```
 
-if you chose to install a UI, you can run:
+## Not-So-Quick Start
+
+The scripts are there to aid development.
+
+`just [command]` is should be the same as `pnpm program:[command]`, most of the time. Check the `justfile` and root `package.json` to see more. I will be using `just [command]` for rest of the doc.
+
+-  Not every Token extension works on localnet. So we have to build from source. The binary is already included at `/spl/spl_token_2022.so`. You can run:
 
 ```sh
-pnpm dev:app
+ just run-validator
 ```
 
-## Usage
-
-There is a justfile included in the repo which contains some utility scripts while using the Solana and Anchor CLI.
-
-You can run these scripts with:
-
+which is basically just,
 ```sh
-pnpm [program:utility_command] <args>
+ solana-test-validator --reset --bpf-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb ./spl/spl_token_2022.so
 ```
 
-You may not need your package manager if you have `just` ready installed with `cargo`, you can:
-
+- Ran into compilation issues relating to this [issue](issue link). Copied this [fix](https://github.com/coral-xyz/anchor/issues/3044#issuecomment-2184026104) that seemed to work.
 ```sh
-just [utility_command] <args>
+cargo update -p solana-zk-token-sdk@2.0.0 --precise 1.18.17
 ```
+can run:
+```sh
+just update-deps
+```
+if you run into the same issues.
 
-to get the same result.
+- All Tests are run in the `protocol/tests` directory. it does, however, require that you copy idls to the `protocol/src/idl` directory.
 
-All utility scripts in the root `package.json` are prefixed with `program:`.
+Run `just copy-idl` to do this automatically. `just build` and `just deploy` do this automatically. _sidenote: `just deploy` also runs `just build`. you can run `just deploy` if you want to build and deploy_
 
-Run `program:copy-idl` when you want to copy the idl to `protocol/ts/src` where it will be packaged and also used for testing.
+- The Rust challenge are in `rust/track-r5`. `marketplace` is the entrypoint. `marketplace-transfer-controller` is the transfer hook program. You probably want to build and deploy `marketplace-transfer-controller` program first.
 
-Running any `program:build` or `program:deploy` scripts runs `copy-idl` automatically. so you may never need to call `copy-idl`.
+- Common utility commands:
+`just copy-idl`, copys idl and types to the `protocol/src/idl` directory to be packaged
 
-Running `program:deploy` also runs `program:build`.
+`just build [program-name]`, same as `anchor build -p [program-name]`, also runs `just copy-idl`
 
-As a Turborepo thing, don't forget to run `build:protocol` when you are done working on the protocol directory.
+`just deploy [program-name]`, same as `anchor deploy -p [program-name]`, also runs `just build` & 
+`just copy-idl`.
 
-You can take a look at the `justfile` to better understand what these scripts are doing.
+`just build-all` and `just deploy-all` runs `anchor build` and `anchor deploy` respectively.
 
-**Enjoy yourself! 🫡**
+`just test [script-name]`. same as `anchor run`.
+
+

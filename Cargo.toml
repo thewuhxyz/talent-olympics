@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "rust/programs/*"
+    "rust/track-r5/*",
+    "rust/utils",
 ]
 resolver = "2"
 
