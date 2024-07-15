@@ -153,9 +153,6 @@ export type Marketplace = {
           }
         },
         {
-          "name": "programId"
-        },
-        {
           "name": "transferHookProgram"
         },
         {
@@ -172,15 +169,6 @@ export type Marketplace = {
         {
           "name": "tokenProgram",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "providerWsolTokenAccount"
-        },
-        {
-          "name": "wsolMint"
-        },
-        {
-          "name": "tokenProgramClassic"
         }
       ],
       "args": []
@@ -615,6 +603,10 @@ export type Marketplace = {
           }
         },
         {
+          "name": "provider",
+          "signer": true
+        },
+        {
           "name": "reseller",
           "signer": true
         },
@@ -635,10 +627,118 @@ export type Marketplace = {
           "writable": true
         },
         {
-          "name": "resellerWsolTokenAccount"
+          "name": "resellerWsolTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "reseller"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgramClassic"
+              },
+              {
+                "kind": "account",
+                "path": "wsolMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
-          "name": "providerWsolTokenAccount"
+          "name": "providerWsolTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "provider"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgramClassic"
+              },
+              {
+                "kind": "account",
+                "path": "wsolMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
           "name": "mintRoyaltyConfig",
@@ -653,7 +753,7 @@ export type Marketplace = {
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "transferHookProgramId"
+          "name": "transferHookProgram"
         },
         {
           "name": "tokenProgramClassic"
@@ -666,16 +766,16 @@ export type Marketplace = {
       "args": []
     },
     {
-      "name": "royaltyInit",
+      "name": "royaltiesInit",
       "discriminator": [
-        250,
-        237,
-        160,
-        206,
-        202,
-        136,
-        66,
-        212
+        181,
+        240,
+        42,
+        153,
+        52,
+        73,
+        183,
+        185
       ],
       "accounts": [
         {
@@ -685,9 +785,6 @@ export type Marketplace = {
         },
         {
           "name": "serviceTicketMint"
-        },
-        {
-          "name": "wsolMint"
         },
         {
           "name": "systemProgram",
@@ -704,20 +801,7 @@ export type Marketplace = {
           "writable": true
         },
         {
-          "name": "mintRoyaltyWsolTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "tokenProgramClassic"
-        },
-        {
-          "name": "associatedTokenProgram"
-        },
-        {
-          "name": "transferHookProgram",
-          "docs": [
-            "CHECK"
-          ]
+          "name": "transferHookProgram"
         }
       ],
       "args": []

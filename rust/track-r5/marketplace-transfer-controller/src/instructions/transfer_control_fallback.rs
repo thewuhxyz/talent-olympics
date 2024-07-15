@@ -3,7 +3,7 @@ use spl_transfer_hook_interface::instruction::TransferHookInstruction;
 
 use crate::__private;
 
-pub fn fallback<'info>(
+pub fn transfer_control_fallback<'info>(
     program_id: &Pubkey,
     accounts: &'info [AccountInfo<'info>],
     data: &[u8],
@@ -16,7 +16,7 @@ pub fn fallback<'info>(
             let amount_bytes = amount.to_le_bytes();
 
             // invoke custom transfer hook instruction on our program
-            __private::__global::royalties(program_id, accounts, &amount_bytes)?
+            __private::__global::transfer_control(program_id, accounts, &amount_bytes)?
         }
         _ => return Err(ProgramError::InvalidInstructionData.into()),
     }

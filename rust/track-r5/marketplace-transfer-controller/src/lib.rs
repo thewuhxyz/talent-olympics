@@ -13,27 +13,27 @@ pub mod marketplace_transfer_controller {
 
     use super::*;
 
-    pub fn royalty_init(ctx: Context<RoyaltyInit>) -> Result<()> {
-        instructions::royalty_init(ctx)
+    pub fn royalty_config_init(ctx: Context<RoyaltyConfigInit>) -> Result<()> {
+        instructions::royalty_config_init(ctx)
     }
 
-    pub fn royalty_init_extra_metas(ctx: Context<RoyaltyInitExtraMetas>) -> Result<()> {
-        instructions::royalty_init_extra_metas(ctx)
+    pub fn royalty_config_update(ctx: Context<RoyaltyConfigUpdate>, is_selling: bool) -> Result<()> {
+        instructions::royalty_config_update(ctx, is_selling)
+    }
+
+    pub fn transfer_control_init(ctx: Context<TransferControlInit>) -> Result<()> {
+        instructions::transfer_control_init(ctx)
     }
     
-    pub fn royalty_update(ctx: Context<RoyaltyUpdate>, is_selling: bool) -> Result<()> {
-        instructions::royalty_update(ctx, is_selling)
+    pub fn transfer_control(ctx: Context<TransferControl>, amount: u64) -> Result<()> {
+        instructions::transfer_control(ctx, amount)
     }
 
-    pub fn royalties(ctx: Context<Royalties>, amount: u64) -> Result<()> {
-        instructions::royalties(ctx, amount)
-    }
-
-    pub fn fallback<'info>(
+    pub fn transfer_control_fallback<'info>(
         program_id: &Pubkey,
         accounts: &'info [AccountInfo<'info>],
         data: &[u8],
     ) -> Result<()> {
-        instructions::fallback(program_id, accounts, data)
+        instructions::transfer_control_fallback(program_id, accounts, data)
     }
 }

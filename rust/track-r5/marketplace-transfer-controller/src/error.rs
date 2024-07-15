@@ -21,6 +21,9 @@ pub enum ErrorCode {
     #[msg("The token is not currently on being sold")]
     IsNotCurrentlyReselling,
     
+    #[msg("Transfer not allowed outside of marketplace")]
+    TransferOutsideMarketplaceNotAllowed,
+    
     #[msg("Overflow occurred")]
     OverflowOccurred,
 }

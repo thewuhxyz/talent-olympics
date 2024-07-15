@@ -2,13 +2,14 @@ import * as anchor from "@coral-xyz/anchor"
 import { AnchorProvider, Program } from "@coral-xyz/anchor"
 import { Marketplace, MarketplaceTransferController } from "../../src"
 import { sleep, explorer } from "../helpers"
-import { assert, should } from "chai"
+import { assert } from "chai"
 import {
 	ASSOCIATED_TOKEN_PROGRAM_ID,
 	NATIVE_MINT,
 	TOKEN_2022_PROGRAM_ID,
 	TOKEN_PROGRAM_ID,
 	getAssociatedTokenAddressSync,
+	transferCheckedWithTransferHook,
 } from "@solana/spl-token"
 import {
 	PublicKey,
@@ -171,7 +172,7 @@ describe("Marketplace: Non-transferable", () => {
 		)
 	})
 
-	it("sells a non-transferable service", async () => {
+	it("buys a non-transferable service", async () => {
 		console.log("---- creating a service ----")
 
 		const ticket = service_ticket_token(serviceReseller.publicKey)
@@ -192,12 +193,6 @@ describe("Marketplace: Non-transferable", () => {
 				transferHookProgramAccount: transfer_hook_program_id,
 				transferHookProgram: transfer_hook_program_id,
 				extraAccountMetasList: extraAccountMetaListPDA,
-				programId: program.programId,
-				// mintRoyaltyConfig,
-				// mintRoyaltyWsolTokenAccount: wsol(mintRoyaltyConfig),
-				providerWsolTokenAccount: wsol(serviceProvider.publicKey),
-				tokenProgramClassic: TOKEN_PROGRAM_ID,
-				wsolMint: NATIVE_MINT,
 			})
 			.signers([serviceReseller, service_ticket_mint])
 			.preInstructions([
@@ -236,5 +231,34 @@ describe("Marketplace: Non-transferable", () => {
 		// 	service.mint.toBase58() === service_ticket_mint.publicKey.toBase58(),
 		// 	"service ticket mint does not match"
 		// )
+	})
+
+	it("fails attempt to transfer", async () => {
+		console.log(
+			"---- attempting to transfer ----"
+		)
+
+		const ticket = service_ticket_token(serviceReseller.publicKey)
+
+		console.log("token account:", ticket)
+
+		await transferCheckedWithTransferHook(
+			connection,
+			serviceReseller,
+			service_token(serviceReseller.publicKey),
+			service_ticket_mint.publicKey,
+			service_token(serviceReceiver.publicKey),
+			serviceReseller,
+			BigInt(1),
+			0,
+			undefined,
+			{ skipPreflight: false },
+			TOKEN_2022_PROGRAM_ID
+		)
+			.then((tx) => {
+				console.log("❌ Transaction successful", explorer(tx, "tx", "custom"))
+				throw "transfer succeeded. should have failed. Mint is Non-Transferable"
+			})
+			.catch(() => console.log("✅ transfer failed successfully. Mint is non Transferable!!!"))
 	})
 })
