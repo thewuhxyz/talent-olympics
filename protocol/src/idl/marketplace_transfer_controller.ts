@@ -36,6 +36,9 @@ export type MarketplaceTransferController = {
         },
         {
           "name": "serviceAccount",
+          "docs": [
+            "service account pda will also sign this transaction"
+          ],
           "signer": true
         },
         {
@@ -158,7 +161,15 @@ export type MarketplaceTransferController = {
           }
         },
         {
-          "name": "mintRoyaltyConfig"
+          "name": "mintRoyaltyConfig",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "serviceTicketMint"
+              }
+            ]
+          }
         }
       ],
       "args": [

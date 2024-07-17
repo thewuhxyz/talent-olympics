@@ -50,26 +50,6 @@ export type Marketplace = {
           "pda": {
             "seeds": [
               {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
                 "kind": "account",
                 "path": "serviceMint"
               }
@@ -81,26 +61,6 @@ export type Marketplace = {
           "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
               {
                 "kind": "account",
                 "path": "serviceTicketMint"
@@ -263,26 +223,6 @@ export type Marketplace = {
           "pda": {
             "seeds": [
               {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
                 "kind": "account",
                 "path": "serviceMint"
               }
@@ -333,7 +273,7 @@ export type Marketplace = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "reseller"
+                "path": "holder"
               },
               {
                 "kind": "account",
@@ -387,37 +327,17 @@ export type Marketplace = {
           "name": "serviceTicketMint"
         },
         {
-          "name": "serviceMint"
-        },
-        {
-          "name": "reseller",
-          "signer": true
+          "name": "holder",
+          "signer": true,
+          "relations": [
+            "serviceAccount"
+          ]
         },
         {
           "name": "serviceAccount",
           "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
               {
                 "kind": "account",
                 "path": "serviceTicketMint"
@@ -436,9 +356,6 @@ export type Marketplace = {
         {
           "name": "tokenProgram",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "delegateSigner"
         }
       ],
       "args": []
@@ -514,13 +431,13 @@ export type Marketplace = {
           }
         },
         {
-          "name": "payerServiceTicketToken",
+          "name": "buyerServiceTicketToken",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "payer"
+                "path": "buyer"
               },
               {
                 "kind": "account",
@@ -579,26 +496,6 @@ export type Marketplace = {
           "pda": {
             "seeds": [
               {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
                 "kind": "account",
                 "path": "serviceTicketMint"
               }
@@ -614,7 +511,7 @@ export type Marketplace = {
           "writable": true
         },
         {
-          "name": "payer",
+          "name": "buyer",
           "writable": true,
           "signer": true
         },
@@ -643,7 +540,8 @@ export type Marketplace = {
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "transferHookProgram"
+          "name": "transferHookProgram",
+          "address": "Bi2dB1dvse6p9nEDSseRC2qgnWXWFHadFSTxTjc4f5EF"
         },
         {
           "name": "tokenProgram",
@@ -666,46 +564,13 @@ export type Marketplace = {
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "holder",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "serviceAccount"
+          ]
         },
-        {
-          "name": "serviceTicketMint"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "provider"
-        },
-        {
-          "name": "serviceAccount"
-        },
-        {
-          "name": "mintRoyaltyConfig",
-          "writable": true
-        },
-        {
-          "name": "transferHookProgram"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "unlistService",
-      "discriminator": [
-        178,
-        236,
-        14,
-        7,
-        219,
-        44,
-        167,
-        27
-      ],
-      "accounts": [
         {
           "name": "serviceTicketToken",
           "writable": true,
@@ -713,7 +578,7 @@ export type Marketplace = {
             "seeds": [
               {
                 "kind": "account",
-                "path": "reseller"
+                "path": "holder"
               },
               {
                 "kind": "account",
@@ -767,37 +632,138 @@ export type Marketplace = {
           "name": "serviceTicketMint"
         },
         {
-          "name": "serviceMint"
+          "name": "serviceAccount",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "serviceTicketMint"
+              }
+            ]
+          }
         },
         {
-          "name": "reseller",
-          "signer": true
+          "name": "provider"
+        },
+        {
+          "name": "mintRoyaltyConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "serviceTicketMint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "transferHookProgram"
+            }
+          }
+        },
+        {
+          "name": "transferHookProgram",
+          "address": "Bi2dB1dvse6p9nEDSseRC2qgnWXWFHadFSTxTjc4f5EF"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unlistService",
+      "discriminator": [
+        178,
+        236,
+        14,
+        7,
+        219,
+        44,
+        167,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "serviceTicketToken",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "holder"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "serviceTicketMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "serviceTicketMint"
+        },
+        {
+          "name": "provider"
+        },
+        {
+          "name": "holder",
+          "signer": true,
+          "relations": [
+            "serviceAccount"
+          ]
         },
         {
           "name": "serviceAccount",
           "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
               {
                 "kind": "account",
                 "path": "serviceTicketMint"

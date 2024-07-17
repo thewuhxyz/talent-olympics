@@ -2,6 +2,7 @@ anchor *args:
     anchor {{args}}
 
 build program:
+    just remove {{program}}
     anchor build -p {{program}}
     just copy-idl
 
@@ -10,11 +11,13 @@ build-all:
     just copy-idl
 
 deploy program:
-    just build {{program}}
+    just remove-idl {{program}}
+    anchor build -p {{program}}
     anchor deploy -p {{program}}
     just copy-idl
 
 deploy-all:
+    just remove-idl-all
     anchor build
     anchor deploy
     just copy-idl
@@ -36,6 +39,17 @@ extend program amount:
 
 close program:
     solana program close -k ~/.config/solana/deployer.json ./target/deploy/intermediate-deploy-{{program}}.json
+
+remove-idl-all:
+    rm -f ./target/idl/*
+    rm -f ./target/types/*
+    find ./protocol/src/idl -mindepth 1 ! -name 'index.ts' -exec rm -rf {} +
+
+remove-idl program:
+    rm -f ./target/idl/{{program}}.json
+    rm -f ./target/types/{{program}}.ts
+    rm -f ./protocol/src/idl/{{program}}.ts
+    rm -f ./protocol/src/idl/{{program}}.json
 	
 copy-idl:
     cp -v ./target/idl/* ./protocol/src/idl

@@ -14,15 +14,15 @@ pub struct TransferControlInit<'info> {
     #[account(mut, signer)]
     pub service_ticket_mint: UncheckedAccount<'info>,
 
-    /// CHECK: mint account, yet to be initialized
+    /// CHECK: extra accoumt metas list
     #[account(
         mut,
-        seeds = [b"extra-account-metas", service_ticket_mint.key().as_ref()],
+        seeds = [utils::META_LIST_ACCOUNT_SEED, service_ticket_mint.key().as_ref()],
         bump 
     )]
     pub extra_account_metas_list: UncheckedAccount<'info>,
     
-    /// CHECK: Program ID
+    /// CHECK: transfer control program
     #[account(address = crate::ID)]
     pub transfer_hook_program_id: UncheckedAccount<'info>,
     

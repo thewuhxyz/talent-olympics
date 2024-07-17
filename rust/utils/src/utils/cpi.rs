@@ -21,7 +21,7 @@ use anchor_spl::{
 use spl_pod::optional_keys::OptionalNonZeroPubkey;
 use spl_tlv_account_resolution::{account::ExtraAccountMeta, state::ExtraAccountMetaList};
 
-use super::get_mint_space;
+use super::{get_mint_space, META_LIST_ACCOUNT_SEED};
 
 pub fn system_program_create_account<
     'info,
@@ -115,7 +115,7 @@ pub fn create_uninitialized_extra_account_metas_account<
     let mint_key = mint.to_account_info().key();
 
     let (extra_account_metas_key, bump) = Pubkey::find_program_address(
-        &[b"extra-account-metas", mint_key.as_ref()],
+        &[META_LIST_ACCOUNT_SEED, mint_key.as_ref()],
         &transfer_hook_program_id.to_account_info().key(),
     );
 
@@ -124,7 +124,7 @@ pub fn create_uninitialized_extra_account_metas_account<
         extra_account_metas_account.to_account_info().key()
     );
 
-    let signer_seeds = &[b"extra-account-metas", mint_key.as_ref(), &[bump]];
+    let signer_seeds = &[META_LIST_ACCOUNT_SEED, mint_key.as_ref(), &[bump]];
 
     system_program_create_account(
         lamports,

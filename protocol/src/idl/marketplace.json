@@ -44,26 +44,6 @@
           "pda": {
             "seeds": [
               {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
                 "kind": "account",
                 "path": "service_mint"
               }
@@ -75,26 +55,6 @@
           "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
               {
                 "kind": "account",
                 "path": "service_ticket_mint"
@@ -257,26 +217,6 @@
           "pda": {
             "seeds": [
               {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
                 "kind": "account",
                 "path": "service_mint"
               }
@@ -327,7 +267,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "reseller"
+                "path": "holder"
               },
               {
                 "kind": "account",
@@ -381,37 +321,17 @@
           "name": "service_ticket_mint"
         },
         {
-          "name": "service_mint"
-        },
-        {
-          "name": "reseller",
-          "signer": true
+          "name": "holder",
+          "signer": true,
+          "relations": [
+            "service_account"
+          ]
         },
         {
           "name": "service_account",
           "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
               {
                 "kind": "account",
                 "path": "service_ticket_mint"
@@ -430,9 +350,6 @@
         {
           "name": "token_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "delegate_signer"
         }
       ],
       "args": []
@@ -508,13 +425,13 @@
           }
         },
         {
-          "name": "payer_service_ticket_token",
+          "name": "buyer_service_ticket_token",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "payer"
+                "path": "buyer"
               },
               {
                 "kind": "account",
@@ -573,26 +490,6 @@
           "pda": {
             "seeds": [
               {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
                 "kind": "account",
                 "path": "service_ticket_mint"
               }
@@ -608,7 +505,7 @@
           "writable": true
         },
         {
-          "name": "payer",
+          "name": "buyer",
           "writable": true,
           "signer": true
         },
@@ -637,7 +534,8 @@
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "transfer_hook_program"
+          "name": "transfer_hook_program",
+          "address": "Bi2dB1dvse6p9nEDSseRC2qgnWXWFHadFSTxTjc4f5EF"
         },
         {
           "name": "token_program",
@@ -660,46 +558,13 @@
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "holder",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "service_account"
+          ]
         },
-        {
-          "name": "service_ticket_mint"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "provider"
-        },
-        {
-          "name": "service_account"
-        },
-        {
-          "name": "mint_royalty_config",
-          "writable": true
-        },
-        {
-          "name": "transfer_hook_program"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "unlist_service",
-      "discriminator": [
-        178,
-        236,
-        14,
-        7,
-        219,
-        44,
-        167,
-        27
-      ],
-      "accounts": [
         {
           "name": "service_ticket_token",
           "writable": true,
@@ -707,7 +572,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "reseller"
+                "path": "holder"
               },
               {
                 "kind": "account",
@@ -761,37 +626,138 @@
           "name": "service_ticket_mint"
         },
         {
-          "name": "service_mint"
+          "name": "service_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "service_ticket_mint"
+              }
+            ]
+          }
         },
         {
-          "name": "reseller",
-          "signer": true
+          "name": "provider"
+        },
+        {
+          "name": "mint_royalty_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "service_ticket_mint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "transfer_hook_program"
+            }
+          }
+        },
+        {
+          "name": "transfer_hook_program",
+          "address": "Bi2dB1dvse6p9nEDSseRC2qgnWXWFHadFSTxTjc4f5EF"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unlist_service",
+      "discriminator": [
+        178,
+        236,
+        14,
+        7,
+        219,
+        44,
+        167,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "service_ticket_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "holder"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "service_ticket_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "service_ticket_mint"
+        },
+        {
+          "name": "provider"
+        },
+        {
+          "name": "holder",
+          "signer": true,
+          "relations": [
+            "service_account"
+          ]
         },
         {
           "name": "service_account",
           "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  114,
-                  118,
-                  105,
-                  99,
-                  101,
-                  45,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
               {
                 "kind": "account",
                 "path": "service_ticket_mint"

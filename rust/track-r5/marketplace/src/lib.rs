@@ -7,10 +7,10 @@ use anchor_lang::prelude::*;
 use instructions::*;
 
 declare_id!("HYLnmvP84H2xnoVq1RSduzvdBVSibs3ZyxNfK6ak8VwL");
+// declare_id!(utils::ids::MARKETPLACE_ID);
 
 #[program]
 pub mod marketplace {
-
     use super::*;
 
     pub fn list_service(

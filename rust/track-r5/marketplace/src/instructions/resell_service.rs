@@ -1,12 +1,9 @@
-use crate::{
-    constants::SERVICE_ACCOUNT_SEEDS, state::{ServiceAccount, ServiceAgreement}, error::ErrorCode
-};
+use crate::{state::{ServiceAccount, ServiceAgreement}, error::ErrorCode};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken, token_2022::{self, Token2022}, token_interface::{Mint, TokenAccount as ITokenAccount, TokenInterface}
 };
 use marketplace_transfer_controller::state::MintRoyaltyConfig;
-// use utils;
 
 #[derive(Accounts)]
 pub struct Resell<'info> {
@@ -21,42 +18,43 @@ pub struct Resell<'info> {
     
     #[account(
         init_if_needed,
-        payer=payer,
+        payer=buyer,
         associated_token::token_program = token_program,
         associated_token::mint = service_ticket_mint,
-        associated_token::authority = payer,
+        associated_token::authority = buyer,
     )]
-    pub payer_service_ticket_token: Box<InterfaceAccount<'info, ITokenAccount>>,
+    pub buyer_service_ticket_token: Box<InterfaceAccount<'info, ITokenAccount>>,
 
-    /// CHECK: mint account, yet to be initialized
-    #[account()]
+    #[account(
+        mint::decimals = 0,
+        extensions::metadata_pointer::metadata_address = service_ticket_mint,
+        extensions::group_member_pointer::member_address = service_ticket_mint,
+    )]
     pub service_ticket_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
         constraint=service_account.holder==reseller.key(), 
         constraint=service_account.mint==service_ticket_mint.key(), 
-        seeds=[SERVICE_ACCOUNT_SEEDS, service_ticket_mint.key().as_ref()],
-        bump=service_account.bump
-
+        seeds=[service_ticket_mint.key().as_ref()],
+        bump,
     )]
     pub service_account: Box<Account<'info, ServiceAccount>>,
     
-    /// CHECK: receiver of the service nft
+    /// CHECK: service provider
     #[account(mut)]
     pub provider: UncheckedAccount<'info>,
 
-    /// CHECK: receiver of the service nft
+    /// CHECK: current holder of the service ticket nft
     #[account(mut)]
     pub reseller: UncheckedAccount<'info>,
     
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub buyer: Signer<'info>,
     
     /// CHECK:...
     #[account(
         mut,
-        // zero,
         seeds=[service_ticket_mint.key().as_ref()],
         bump,
         seeds::program=transfer_hook_program.key(),
@@ -68,21 +66,20 @@ pub struct Resell<'info> {
     
     pub associated_token_program: Program<'info, AssociatedToken>,
     
-    /// CHECK:...
-    #[account(executable)]
+    /// CHECK: transfer_controller_program
+    #[account(executable, address=marketplace_transfer_controller::ID)]
     pub transfer_hook_program: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token2022>,
 }
 
 pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Result<()> {
-    msg!("start");
     let service_ticket = &ctx.accounts.service_ticket_mint;
     let reseller_service_ticket_token = &ctx.accounts.reseller_service_ticket_token;
-    let payer_service_ticket_token = &ctx.accounts.payer_service_ticket_token;
+    let buyer_service_ticket_token = &ctx.accounts.buyer_service_ticket_token;
     let token_program = &ctx.accounts.token_program;
     let system_program = &ctx.accounts.system_program;
-    let payer = &ctx.accounts.payer;
+    let buyer = &ctx.accounts.buyer;
     let reseller = &ctx.accounts.reseller;
     let provider = &ctx.accounts.provider;
     let service_account = &ctx.accounts.service_account;
@@ -93,39 +90,38 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
 
     let provider_payment_token_account_unchecked = &ctx.remaining_accounts[2];
     let reseller_payment_token_account_unchecked = &ctx.remaining_accounts[3];
-    let payer_payment_token_account_unchecked = &ctx.remaining_accounts[4];
+    let buyer_payment_token_account_unchecked = &ctx.remaining_accounts[4];
     
     let extra_account_metas_list = &ctx.remaining_accounts[5];
-    // let mint_royalty_config = &ctx.remaining_accounts[6];
     let mint_royalty_config = &ctx.accounts.mint_royalty_config;
     let transfer_hook_program = &ctx.accounts.transfer_hook_program;
 
-    // perform massive check
     init_if_needed_token_account(&ctx, provider_payment_token_account_unchecked, provider)?;
     init_if_needed_token_account(&ctx, reseller_payment_token_account_unchecked, reseller)?;
-    init_if_needed_token_account(&ctx, payer_payment_token_account_unchecked, payer)?;
-
-    msg!("3");
+    init_if_needed_token_account(&ctx, buyer_payment_token_account_unchecked, buyer)?;
     
+    // todo: perform massive checks
     let provider_payment_token_account = InterfaceAccount::<ITokenAccount>::try_from(provider_payment_token_account_unchecked)?;
     let reseller_payment_token_account = InterfaceAccount::<ITokenAccount>::try_from(reseller_payment_token_account_unchecked)?;
-    let payer_payment_token_account = InterfaceAccount::<ITokenAccount>::try_from(payer_payment_token_account_unchecked)?;
-    
-    msg!("4");
-    
+    let buyer_payment_token_account = InterfaceAccount::<ITokenAccount>::try_from(buyer_payment_token_account_unchecked)?;
+        
     if !service_account.is_listed {
         return err!(ErrorCode::IsNotListed)
     }
     
     update_royalty_config(&ctx, true)?;
 
-    let (reseller_amount, provider_amount) = ServiceAgreement::try_from(service_ticket.to_account_info())?.royalties_split()?;
+    let service_agreement = ServiceAgreement::try_from(service_ticket.to_account_info())?;
+
+    require_keys_eq!(provider.key(), service_agreement.provider);
+
+    let (reseller_amount, provider_amount) = service_agreement.royalties_split()?;
 
     token_2022::spl_token_2022::onchain::invoke_transfer_checked(
         token_program.key,
         reseller_service_ticket_token.clone().to_account_info(),
         service_ticket.clone().to_account_info(),
-        payer_service_ticket_token.clone().to_account_info(),
+        buyer_service_ticket_token.clone().to_account_info(),
         service_account.clone().to_account_info(), // token account delegate
         &[
             extra_account_metas_list.to_account_info(),
@@ -135,9 +131,9 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
         1,
         service_ticket.decimals,
         &[
-             &[ b"service-account".as_ref(),
+            &[
                 ctx.accounts.service_ticket_mint.key().as_ref(),
-                &[ctx.accounts.service_account.bump]]
+                &[ctx.bumps.service_account]]
             ],
     )?;
 
@@ -145,14 +141,14 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
         utils::system_program_transfer(
             reseller_amount, 
             system_program, 
-            payer, 
+            buyer, 
             &reseller_payment_token_account
         )?;
         
         utils::system_program_transfer(
             provider_amount, 
             system_program, 
-            payer, 
+            buyer, 
             &provider_payment_token_account
         )?;
         
@@ -163,25 +159,25 @@ pub fn resell<'info>(ctx: Context<'_, '_, 'info, 'info, Resell<'info>>) -> Resul
         utils::token_transfer_checked_transfer(
             reseller_amount, 
             payment_token_mint.decimals, 
-            &payer_payment_token_account, 
+            &buyer_payment_token_account, 
             &reseller_payment_token_account, 
             &payment_token_mint, 
-            &payer, 
+            &buyer, 
             &payment_token_program
         )?;
         
         utils::token_transfer_checked_transfer(
             reseller_amount, 
             payment_token_mint.decimals, 
-            &payer_payment_token_account, 
+            &buyer_payment_token_account, 
             &provider_payment_token_account, 
             &payment_token_mint, 
-            &payer, 
+            &buyer, 
             &payment_token_program
         )?;
     }
 
-    ctx.accounts.service_account.update_holder(payer.key());
+    ctx.accounts.service_account.update_holder(buyer.key());
     
     update_royalty_config(&ctx, false)?;
     
@@ -199,9 +195,7 @@ fn update_royalty_config<'info>(ctx: &Context<'_, '_, 'info, 'info, Resell<'info
                 service_ticket_mint: ctx.accounts.service_ticket_mint.to_account_info(),
             },
             &[
-               &[ b"service-account".as_ref(),
-                ctx.accounts.service_ticket_mint.key().as_ref(),
-                &[ctx.accounts.service_account.bump]]
+               &[ctx.accounts.service_ticket_mint.key().as_ref(), &[ctx.bumps.service_account]]
             ]
         ), 
         is_selling
@@ -213,7 +207,7 @@ fn init_if_needed_token_account<'info>(ctx: &Context<'_, '_, 'info, 'info, Resel
         associated_token_account, 
         authority, 
         &ctx.remaining_accounts[1], // payment token mint
-        &ctx.accounts.payer, 
+        &ctx.accounts.buyer, 
         &ctx.remaining_accounts[0], // payment token program
         &ctx.accounts.system_program, 
         &ctx.accounts.associated_token_program, 

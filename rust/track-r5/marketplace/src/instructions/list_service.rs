@@ -1,9 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{
-    constants::SERVICE_ACCOUNT_SEEDS,
-    state::{ServiceAccount, ServiceAgreement},
-};
+use crate::state::{ServiceAccount, ServiceAgreement};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_2022::spl_token_2022::instruction::AuthorityType,
@@ -52,7 +49,7 @@ pub struct ListService<'info> {
         init,
         payer=payer,
         space=8+ServiceAccount::INIT_SPACE,
-        seeds=[SERVICE_ACCOUNT_SEEDS, service_mint.key().as_ref()],
+        seeds=[service_mint.key().as_ref()],
         bump
     )]
     pub service_account: Account<'info, ServiceAccount>,

@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor"
 import { AnchorProvider, Program } from "@coral-xyz/anchor"
 import { Marketplace, MarketplaceTransferController } from "../../src"
 import { sleep, explorer } from "../helpers"
-import { assert, expect } from "chai"
+import { assert } from "chai"
 import {
 	ASSOCIATED_TOKEN_PROGRAM_ID,
 	NATIVE_MINT,
@@ -44,8 +44,6 @@ describe("Marketplace: Transferable", () => {
 
 	console.log("👉 service receiver:", serviceReceiver.publicKey.toBase58())
 
-	const SERVICE_ACCOUNT_SEEDS = "service-account"
-
 	const wsol = (owner: PublicKey) =>
 		getAssociatedTokenAddressSync(NATIVE_MINT, owner, true, TOKEN_PROGRAM_ID)
 
@@ -65,9 +63,9 @@ describe("Marketplace: Transferable", () => {
 			TOKEN_2022_PROGRAM_ID
 		)
 
-	const servicePda = (mint: PublicKey) =>
+	const servicePda = (mint: Keypair) =>
 		PublicKey.findProgramAddressSync(
-			[Buffer.from(SERVICE_ACCOUNT_SEEDS), mint.toBuffer()],
+			[mint.publicKey.toBuffer()],
 			program.programId
 		)[0]
 
@@ -79,10 +77,11 @@ describe("Marketplace: Transferable", () => {
 		transfer_hook_program_id
 	)
 
-	const [mintRoyaltyConfig] = PublicKey.findProgramAddressSync(
-		[service_ticket_mint.publicKey.toBuffer()],
-		transfer_hook_program_id
-	)
+	const mintRoyaltyConfig = (mint: Keypair) =>
+		PublicKey.findProgramAddressSync(
+			[mint.publicKey.toBuffer()],
+			transfer_hook_program_id
+		)[0]
 
 	const [delegateSigner] = PublicKey.findProgramAddressSync(
 		[Buffer.from("signer"), service_ticket_mint.publicKey.toBuffer()],
@@ -135,7 +134,7 @@ describe("Marketplace: Transferable", () => {
 				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
 				payer: serviceProvider.publicKey,
 				provider: serviceProvider.publicKey,
-				serviceAccount: servicePda(service_mint.publicKey),
+				serviceAccount: servicePda(service_mint),
 				serviceMint: service_mint.publicKey,
 				serviceTokenAccount: service_token(serviceProvider.publicKey),
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -164,7 +163,7 @@ describe("Marketplace: Transferable", () => {
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_mint.publicKey)
+			servicePda(service_mint)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
@@ -185,8 +184,6 @@ describe("Marketplace: Transferable", () => {
 
 		const ticket = service_ticket_token(serviceReseller.publicKey)
 
-		console.log("token account:", ticket)
-
 		let tx = await program.methods
 			.buyService()
 			.accountsStrict({
@@ -195,11 +192,11 @@ describe("Marketplace: Transferable", () => {
 				provider: serviceProvider.publicKey,
 				serviceTicketTokenAccount: ticket,
 				serviceTicketMint: service_ticket_mint.publicKey,
-				providerServiceAccount: servicePda(service_mint.publicKey),
+				providerServiceAccount: servicePda(service_mint),
 				serviceMint: service_mint.publicKey,
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
 				systemProgram: SystemProgram.programId,
-				buyerServiceAccount: servicePda(service_ticket_mint.publicKey),
+				buyerServiceAccount: servicePda(service_ticket_mint),
 				transferHookProgram: transfer_hook_program_id,
 				transferHookProgramAccount: transfer_hook_program_id,
 				extraAccountMetasList: extraAccountMetaListPDA,
@@ -227,7 +224,7 @@ describe("Marketplace: Transferable", () => {
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_ticket_mint.publicKey)
+			servicePda(service_ticket_mint)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
@@ -257,9 +254,11 @@ describe("Marketplace: Transferable", () => {
 				serviceTicketMint: service_ticket_mint.publicKey,
 				systemProgram: SystemProgram.programId,
 				transferHookProgram: transfer_hook_program_id,
-				mintRoyaltyConfig,
-				payer: serviceReseller.publicKey,
-				serviceAccount: servicePda(service_ticket_mint.publicKey),
+				mintRoyaltyConfig: mintRoyaltyConfig(service_ticket_mint),
+				holder: serviceReseller.publicKey,
+				serviceAccount: servicePda(service_ticket_mint),
+				serviceTicketToken: service_ticket_token(serviceReseller.publicKey),
+				tokenProgram: TOKEN_2022_PROGRAM_ID
 			})
 			.signers([serviceReseller])
 			.preInstructions([
@@ -324,13 +323,11 @@ describe("Marketplace: Transferable", () => {
 			.relistService()
 			.accountsStrict({
 				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-				reseller: serviceReseller.publicKey,
+				holder: serviceReseller.publicKey,
 				serviceTicketMint: service_ticket_mint.publicKey,
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
 				systemProgram: SystemProgram.programId,
-				delegateSigner,
-				serviceAccount: servicePda(service_ticket_mint.publicKey),
-				serviceMint: service_mint.publicKey,
+				serviceAccount: servicePda(service_ticket_mint),
 				serviceTicketToken: service_ticket_token(serviceReseller.publicKey),
 			})
 			.signers([serviceReseller])
@@ -356,7 +353,7 @@ describe("Marketplace: Transferable", () => {
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_ticket_mint.publicKey)
+			servicePda(service_ticket_mint)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
@@ -387,25 +384,17 @@ describe("Marketplace: Transferable", () => {
 				serviceTicketMint: service_ticket_mint.publicKey,
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
 				systemProgram: SystemProgram.programId,
-				// extraAccountMetasList: extraAccountMetaListPDA,
-				// mintRoyaltyConfig,
-				// delegateSigner,
-				// providerPaymentTokenAccount: wsol(serviceProvider.publicKey),
-				// paymentTokenProgram: TOKEN_PROGRAM_ID,
-				// paymentTokenMint: NATIVE_MINT,
-				payer: serviceReceiver.publicKey,
+				buyer: serviceReceiver.publicKey,
 				provider: serviceProvider.publicKey,
-				payerServiceTicketToken: service_ticket_token(
+				buyerServiceTicketToken: service_ticket_token(
 					serviceReceiver.publicKey
 				),
 				resellerServiceTicketToken: service_ticket_token(
 					serviceReseller.publicKey
 				),
-				// payerPaymentTokenAccount: wsol(serviceReceiver.publicKey),
-				// resellerPaymentTokenAccount: wsol(serviceReseller.publicKey),
-				serviceAccount: servicePda(service_ticket_mint.publicKey),
+				serviceAccount: servicePda(service_ticket_mint),
 				transferHookProgram: transfer_hook_program_id,
-				mintRoyaltyConfig,
+				mintRoyaltyConfig: mintRoyaltyConfig(service_ticket_mint),
 			})
 			.remainingAccounts([
 				{
@@ -438,11 +427,6 @@ describe("Marketplace: Transferable", () => {
 					isSigner: false,
 					isWritable: true,
 				},
-				// {
-				// 	pubkey: mintRoyaltyConfig,
-				// 	isSigner: false,
-				// 	isWritable: true,
-				// },
 			])
 			.signers([serviceReceiver])
 			.preInstructions([
@@ -467,7 +451,7 @@ describe("Marketplace: Transferable", () => {
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_ticket_mint.publicKey)
+			servicePda(service_ticket_mint)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))

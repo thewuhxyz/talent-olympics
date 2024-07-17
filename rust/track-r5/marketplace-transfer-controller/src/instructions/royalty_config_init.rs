@@ -13,9 +13,13 @@ pub struct RoyaltyConfigInit<'info> {
     #[account()]
     pub service_ticket_mint: InterfaceAccount<'info, Mint>,
     
-    /// CHECK: ...
-    #[account(signer)]
-    pub service_account: AccountInfo<'info>,
+    /// service account pda will also sign this transaction
+    #[account(
+        // seeds=[service_ticket_mint.key().as_ref()],
+        // bump,
+        // seeds::program=utils::ids::MARKETPLACE_ID
+    )]
+    pub service_account: Signer<'info>,
 
     #[account(
         init, 

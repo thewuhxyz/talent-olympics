@@ -30,6 +30,9 @@
         },
         {
           "name": "service_account",
+          "docs": [
+            "service account pda will also sign this transaction"
+          ],
           "signer": true
         },
         {
@@ -152,7 +155,15 @@
           }
         },
         {
-          "name": "mint_royalty_config"
+          "name": "mint_royalty_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "service_ticket_mint"
+              }
+            ]
+          }
         }
       ],
       "args": [

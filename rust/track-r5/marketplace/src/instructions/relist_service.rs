@@ -1,6 +1,4 @@
-use crate::{
-    constants::SERVICE_ACCOUNT_SEEDS, state::ServiceAccount
-};
+use crate::state::ServiceAccount;
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -13,28 +11,27 @@ pub struct Relist<'info> {
         constraint = service_ticket_token.amount == 1,
         associated_token::token_program = token_program,
         associated_token::mint = service_ticket_mint,
-        associated_token::authority = reseller,
+        associated_token::authority = holder,
     )]
     pub service_ticket_token: InterfaceAccount<'info, TokenAccount>,
 
-    /// CHECK: mint account, yet to be initialized
-    #[account()]
+    #[account(
+        mint::decimals = 0,
+        extensions::metadata_pointer::metadata_address = service_ticket_mint,
+        extensions::group_member_pointer::member_address = service_ticket_mint,
+    )]
     pub service_ticket_mint: InterfaceAccount<'info, Mint>,
     
+    /// CHECK: current holder of the service nft
     #[account()]
-    pub service_mint: InterfaceAccount<'info, Mint>,
-
-    /// CHECK: receiver of the service nft
-    #[account()]
-    pub reseller: Signer<'info>,
+    pub holder: Signer<'info>,
     
     #[account(
         mut,
-        constraint=service_account.holder==reseller.key(), 
+        has_one=holder, 
         constraint=service_account.mint==service_ticket_mint.key(), 
-        seeds=[SERVICE_ACCOUNT_SEEDS, service_ticket_mint.key().as_ref()],
-        bump=service_account.bump
-
+        seeds=[service_ticket_mint.key().as_ref()],
+        bump
     )]
     pub service_account: Account<'info, ServiceAccount>,
     
@@ -43,23 +40,19 @@ pub struct Relist<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
     
     pub token_program: Program<'info, Token2022>,
-
-    /// CHECK: royalty config
-    pub delegate_signer: UncheckedAccount<'info>,
 }
 
 pub fn relist(ctx: Context<Relist>) -> Result<()> {
     let service_account = &mut ctx.accounts.service_account;
     let service_ticket_token = &ctx.accounts.service_ticket_token;
-    let reseller = &ctx.accounts.reseller;
+    let holder = &ctx.accounts.holder;
     let token_program = &ctx.accounts.token_program;
-    let _delegate_signer = &ctx.accounts.delegate_signer;
     
     utils::approve_delegate(
         1, 
         service_account, // token account delegate
         service_ticket_token, 
-        reseller,
+        holder,
         token_program
     )?;
     
