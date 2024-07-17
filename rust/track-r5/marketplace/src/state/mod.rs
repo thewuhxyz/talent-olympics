@@ -1,9 +1,9 @@
-use std::str::FromStr;
+use std::{ops::Deref, str::FromStr};
 
 use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::spl_token_metadata_interface::state::TokenMetadata;
-use utils;
+use borsh::BorshDeserialize;
 
 #[account]
 #[derive(InitSpace, PartialEq)]
@@ -29,12 +29,14 @@ impl ServiceAccount {
     pub fn update_holder(&mut self, new_holder: Pubkey) {
         self.holder = new_holder;
         self.is_listed = false;
+
+        // Self::try_deserialize(buf)
     }
 
     pub fn unlist(&mut self) {
         self.is_listed = false;
     }
-    
+
     pub fn list(&mut self) {
         self.is_listed = true;
     }
@@ -110,7 +112,8 @@ impl TryFrom<AccountInfo<'_>> for ServiceAgreement {
     type Error = Error;
 
     fn try_from(mut account_info: AccountInfo) -> Result<Self> {
-        let metadata = utils::get_mint_extensible_extension_data::<TokenMetadata>(&mut account_info)?;
+        let metadata =
+            utils::get_mint_extensible_extension_data::<TokenMetadata>(&mut account_info)?;
         let additional_metadata = metadata.additional_metadata;
 
         let name = metadata.name;
@@ -159,3 +162,36 @@ where
 
     Err(error!(ErrorCode::MetadataValueParseError))
 }
+
+#[derive(Clone)]
+pub struct MintRoyaltyConfig(utils::state::MintRoyaltyConfig);
+
+impl anchor_lang::Owner for MintRoyaltyConfig {
+    fn owner() -> Pubkey {
+        return marketplace_transfer_controller::ID;
+    }
+}
+
+impl anchor_lang::AccountDeserialize for MintRoyaltyConfig {
+    fn try_deserialize_unchecked(data: &mut &[u8]) -> Result<Self> {
+        if let Ok(royalty_config) = utils::state::MintRoyaltyConfig::deserialize(data) {
+            return Ok(MintRoyaltyConfig(royalty_config));
+        }
+        err!(ErrorCode::MintRoyaltyParseError)
+    }
+}
+
+impl anchor_lang::AccountSerialize for MintRoyaltyConfig {
+    fn try_serialize<W: std::io::Write>(&self, _writer: &mut W) -> std::result::Result<(), Error> {
+        Err(error!(ErrorCode::MintRoyaltyParseError))
+    }
+}
+
+impl Deref for MintRoyaltyConfig {
+    type Target = utils::state::MintRoyaltyConfig;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+

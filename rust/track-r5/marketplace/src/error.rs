@@ -26,4 +26,7 @@ pub enum ErrorCode {
     
     #[msg("Overflow occurred")]
     OverflowOccurred,
+    
+    #[msg("Failed to parse mint royalty config")]
+    MintRoyaltyParseError,
 }

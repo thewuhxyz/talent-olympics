@@ -26,26 +26,14 @@ pub struct RoyaltyConfigInit<'info> {
     )]
     pub mint_royalty_config: Account<'info, MintRoyaltyConfig>,
 
-    #[account(
-        mut,
-        seeds=[b"signer".as_ref(),service_ticket_mint.key().as_ref()],
-        bump,
-    )]
-    pub delegate_signer: SystemAccount<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
 pub fn royalty_config_init(ctx: Context<RoyaltyConfigInit>) -> Result<()> {
     let service_ticket_mint = &mut ctx.accounts.service_ticket_mint;
     let mint_royalty_config = &mut ctx.accounts.mint_royalty_config;
-    // let system_program = &mut ctx.accounts.system_program;
-    // let payer = &mut ctx.accounts.payer;
-    // let delegate_signer = &mut ctx.accounts.delegate_signer;
 
-    // utils::system_program_transfer(890990, system_program, payer, delegate_signer)?;
-
-    mint_royalty_config.init(service_ticket_mint.key(), ctx.bumps.delegate_signer)?;
+    mint_royalty_config.init(service_ticket_mint.key())?;
 
     Ok(())
 }

@@ -120,7 +120,7 @@ export type MarketplaceTransferController = {
           "name": "receiverTokenAccount"
         },
         {
-          "name": "reseller"
+          "name": "serviceAccount"
         },
         {
           "name": "extraAccountMetasList",

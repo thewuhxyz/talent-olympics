@@ -614,23 +614,9 @@
         },
         {
           "name": "mint_royalty_config",
-          "writable": true
-        },
-        {
-          "name": "delegate_signer",
+          "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  105,
-                  103,
-                  110,
-                  101,
-                  114
-                ]
-              },
               {
                 "kind": "account",
                 "path": "service_ticket_mint"
@@ -697,33 +683,6 @@
         },
         {
           "name": "transfer_hook_program"
-        },
-        {
-          "name": "delegate_signer",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  105,
-                  103,
-                  110,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "service_ticket_mint"
-              }
-            ],
-            "program": {
-              "kind": "account",
-              "path": "transfer_hook_program"
-            }
-          }
         }
       ],
       "args": []
@@ -854,6 +813,19 @@
   ],
   "accounts": [
     {
+      "name": "MintRoyaltyConfig",
+      "discriminator": [
+        130,
+        208,
+        45,
+        78,
+        108,
+        125,
+        243,
+        222
+      ]
+    },
+    {
       "name": "ServiceAccount",
       "discriminator": [
         72,
@@ -907,9 +879,38 @@
       "code": 6007,
       "name": "OverflowOccurred",
       "msg": "Overflow occurred"
+    },
+    {
+      "code": 6008,
+      "name": "MintRoyaltyParseError",
+      "msg": "Failed to parse mint royalty config"
     }
   ],
   "types": [
+    {
+      "name": "MintRoyaltyConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_selling",
+            "type": "bool"
+          },
+          {
+            "name": "is_enabled",
+            "type": "bool"
+          },
+          {
+            "name": "is_initialized",
+            "type": "bool"
+          }
+        ]
+      }
+    },
     {
       "name": "ServiceAccount",
       "type": {

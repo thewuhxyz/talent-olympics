@@ -21,6 +21,7 @@ wallet = "~/.config/solana/deployer.json"
 [scripts]
 test = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/**/*.test.ts"
 marketplace = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/marketplace/**/*.test.ts"
+transferable = "ts-mocha -p ./protocol/tsconfig.json -t 1000000 protocol/tests/marketplace/transferable.test.ts"
 
 [workspace]
 members = [ "rust/track-r5/*" ]

@@ -114,7 +114,7 @@
           "name": "receiver_token_account"
         },
         {
-          "name": "reseller"
+          "name": "service_account"
         },
         {
           "name": "extra_account_metas_list",

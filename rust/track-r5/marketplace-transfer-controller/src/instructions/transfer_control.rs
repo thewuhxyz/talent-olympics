@@ -18,7 +18,7 @@ pub struct TransferControl<'info> {
 
     /// CHECK: reseller of the service nft
     #[account()]
-    pub reseller: UncheckedAccount<'info>,
+    pub service_account: UncheckedAccount<'info>,
 
     /// CHECK: mint account, yet to be initialized
     #[account(

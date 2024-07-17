@@ -260,7 +260,6 @@ describe("Marketplace: Transferable", () => {
 				mintRoyaltyConfig,
 				payer: serviceReseller.publicKey,
 				serviceAccount: servicePda(service_ticket_mint.publicKey),
-				delegateSigner,
 			})
 			.signers([serviceReseller])
 			.preInstructions([
@@ -340,7 +339,7 @@ describe("Marketplace: Transferable", () => {
 					units: 400000,
 				}),
 			])
-			.rpc({ skipPreflight: false })
+			.rpc({ skipPreflight: true })
 
 		console.log("✅ Transaction successful", explorer(tx, "tx", "custom"))
 
@@ -390,7 +389,7 @@ describe("Marketplace: Transferable", () => {
 				systemProgram: SystemProgram.programId,
 				// extraAccountMetasList: extraAccountMetaListPDA,
 				// mintRoyaltyConfig,
-				delegateSigner,
+				// delegateSigner,
 				// providerPaymentTokenAccount: wsol(serviceProvider.publicKey),
 				// paymentTokenProgram: TOKEN_PROGRAM_ID,
 				// paymentTokenMint: NATIVE_MINT,
@@ -410,14 +409,9 @@ describe("Marketplace: Transferable", () => {
 			})
 			.remainingAccounts([
 				{
-					pubkey: extraAccountMetaListPDA,
-					isSigner: false,
-					isWritable: true,
-				},
-				{
 					pubkey: TOKEN_PROGRAM_ID, // token program
 					isSigner: false,
-					isWritable: true,
+					isWritable: false,
 				},
 				{
 					pubkey: NATIVE_MINT, // token mint
@@ -439,6 +433,16 @@ describe("Marketplace: Transferable", () => {
 					isSigner: false,
 					isWritable: true,
 				},
+				{
+					pubkey: extraAccountMetaListPDA,
+					isSigner: false,
+					isWritable: true,
+				},
+				// {
+				// 	pubkey: mintRoyaltyConfig,
+				// 	isSigner: false,
+				// 	isWritable: true,
+				// },
 			])
 			.signers([serviceReceiver])
 			.preInstructions([
@@ -446,7 +450,7 @@ describe("Marketplace: Transferable", () => {
 					units: 400000,
 				}),
 			])
-			.rpc({ skipPreflight: false })
+			.rpc({ skipPreflight: true })
 
 		console.log("✅ Transaction successful", explorer(tx, "tx", "custom"))
 

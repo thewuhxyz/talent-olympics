@@ -620,23 +620,9 @@ export type Marketplace = {
         },
         {
           "name": "mintRoyaltyConfig",
-          "writable": true
-        },
-        {
-          "name": "delegateSigner",
+          "writable": true,
           "pda": {
             "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  105,
-                  103,
-                  110,
-                  101,
-                  114
-                ]
-              },
               {
                 "kind": "account",
                 "path": "serviceTicketMint"
@@ -703,33 +689,6 @@ export type Marketplace = {
         },
         {
           "name": "transferHookProgram"
-        },
-        {
-          "name": "delegateSigner",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  105,
-                  103,
-                  110,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "serviceTicketMint"
-              }
-            ],
-            "program": {
-              "kind": "account",
-              "path": "transferHookProgram"
-            }
-          }
         }
       ],
       "args": []
@@ -860,6 +819,19 @@ export type Marketplace = {
   ],
   "accounts": [
     {
+      "name": "mintRoyaltyConfig",
+      "discriminator": [
+        130,
+        208,
+        45,
+        78,
+        108,
+        125,
+        243,
+        222
+      ]
+    },
+    {
       "name": "serviceAccount",
       "discriminator": [
         72,
@@ -913,9 +885,38 @@ export type Marketplace = {
       "code": 6007,
       "name": "overflowOccurred",
       "msg": "Overflow occurred"
+    },
+    {
+      "code": 6008,
+      "name": "mintRoyaltyParseError",
+      "msg": "Failed to parse mint royalty config"
     }
   ],
   "types": [
+    {
+      "name": "mintRoyaltyConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "isSelling",
+            "type": "bool"
+          },
+          {
+            "name": "isEnabled",
+            "type": "bool"
+          },
+          {
+            "name": "isInitialized",
+            "type": "bool"
+          }
+        ]
+      }
+    },
     {
       "name": "serviceAccount",
       "type": {

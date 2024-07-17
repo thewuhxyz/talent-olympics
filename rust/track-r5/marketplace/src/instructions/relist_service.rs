@@ -53,11 +53,11 @@ pub fn relist(ctx: Context<Relist>) -> Result<()> {
     let service_ticket_token = &ctx.accounts.service_ticket_token;
     let reseller = &ctx.accounts.reseller;
     let token_program = &ctx.accounts.token_program;
-    let delegate_signer = &ctx.accounts.delegate_signer;
+    let _delegate_signer = &ctx.accounts.delegate_signer;
     
     utils::approve_delegate(
         1, 
-        delegate_signer, 
+        service_account, // token account delegate
         service_ticket_token, 
         reseller,
         token_program
