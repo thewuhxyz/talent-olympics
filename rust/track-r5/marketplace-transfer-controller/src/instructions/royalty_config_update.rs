@@ -6,11 +6,14 @@ use anchor_spl::token_interface::Mint;
 
 #[derive(Accounts)]
 pub struct RoyaltyConfigUpdate<'info> {
-    /// CHECK: mint account, yet to be initialized
-    #[account()]
+    /// CHECK: mint account
     pub service_ticket_mint: InterfaceAccount<'info, Mint>,
     
-    /// CHECK:...
+    #[account(
+        // seeds=[service_ticket_mint.key().as_ref()],
+        // bump,
+        // seeds::program=utils::ids::MARKETPLACE_ID
+    )]
     pub service_account: Signer<'info>,
 
     #[account(

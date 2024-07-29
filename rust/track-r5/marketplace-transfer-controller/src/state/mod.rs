@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[account]
-#[derive(InitSpace, PartialEq)]
+#[derive(InitSpace, PartialEq, Debug)]
 pub struct MintRoyaltyConfig {
     pub mint: Pubkey,
     pub is_selling: bool,

@@ -16,32 +16,36 @@ pub struct TransferControl<'info> {
     #[account()]
     pub receiver_token_account: UncheckedAccount<'info>,
 
-    /// CHECK: reseller of the service nft
-    #[account()]
-    pub reseller: UncheckedAccount<'info>,
+    /// CHECK: service account as the authorized delegate for the transfer
+    #[account(
+        // seeds=[service_ticket_mint.key().as_ref()],
+        // bump,
+        // seeds::program=utils::ids::MARKETPLACE_ID
+    )]
+    pub service_account: UncheckedAccount<'info>,
 
     /// CHECK: mint account, yet to be initialized
     #[account(
-        seeds = [b"extra-account-metas", service_ticket_mint.key().as_ref()],
+        seeds = [utils::META_LIST_ACCOUNT_SEED, service_ticket_mint.key().as_ref()],
         bump 
     )]
     pub extra_account_metas_list: UncheckedAccount<'info>,
 
-    /// CHECK: ...
-    #[account()]
+    #[account(
+        seeds=[service_ticket_mint.key().as_ref()],
+        bump,
+    )]
     pub mint_royalty_config: Account<'info, MintRoyaltyConfig>,
 }
 
 pub fn transfer_control(ctx: Context<TransferControl>, _amount: u64) -> Result<()> {
+    assert_is_transferring(&ctx)?;
+    
     ctx.accounts.mint_royalty_config.reload()?;
     
-    let mint_config = &ctx.accounts.mint_royalty_config;
+    let is_selling = &ctx.accounts.mint_royalty_config.is_selling;
 
-    let is_selling = &mint_config.is_selling;
-
-    assert_is_transferring(&ctx)?;
-
-    msg!("is selling: {is_selling}", );
+    msg!("is selling: {is_selling}",);
 
     if !is_selling {return err!(ErrorCode::TransferOutsideMarketplaceNotAllowed) }
 

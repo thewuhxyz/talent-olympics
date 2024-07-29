@@ -1,5 +1,4 @@
 use crate::{
-    constants::SERVICE_ACCOUNT_SEEDS,
     error::ErrorCode,
     state::{ServiceAccount, ServiceAgreement},
 };
@@ -35,7 +34,7 @@ pub struct BuyService<'info> {
     #[account(
         mut,
         constraint=provider_service_account.mint==service_mint.key(),
-        seeds=[SERVICE_ACCOUNT_SEEDS, service_mint.key().as_ref()],
+        seeds=[service_mint.key().as_ref()],
         bump=provider_service_account.bump
 
     )]
@@ -45,7 +44,7 @@ pub struct BuyService<'info> {
         init,
         payer=buyer,
         space=8+ServiceAccount::INIT_SPACE,
-        seeds=[SERVICE_ACCOUNT_SEEDS, service_ticket_mint.key().as_ref()],
+        seeds=[service_ticket_mint.key().as_ref()],
         bump
     )]
     pub buyer_service_account: Account<'info, ServiceAccount>,
@@ -57,7 +56,7 @@ pub struct BuyService<'info> {
     /// CHECK: mint account, yet to be initialized
     #[account(
         mut,
-        seeds = [b"extra-account-metas", service_ticket_mint.key().as_ref()],
+        seeds = [utils::META_LIST_ACCOUNT_SEED, service_ticket_mint.key().as_ref()],
         bump,
         seeds::program=transfer_hook_program.key()
     )]
@@ -94,7 +93,7 @@ pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
     let associated_token_program = &ctx.accounts.associated_token_program;
 
     let (service_account_key, _) = Pubkey::find_program_address(
-        &[SERVICE_ACCOUNT_SEEDS.as_ref(), service.key().as_ref()],
+        &[service.key().as_ref()],
         &ctx.program_id,
     );
 
@@ -174,7 +173,6 @@ pub fn buy_service(ctx: Context<BuyService>) -> Result<()> {
         buyer,
         token_program,
         Some(&[
-            SERVICE_ACCOUNT_SEEDS.as_ref(),
             service.key().as_ref(),
             &[provider_service_account.bump],
         ]),

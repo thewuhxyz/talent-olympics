@@ -21,6 +21,12 @@ pub enum ErrorCode {
     #[msg("The token is not currently on being sold")]
     IsNotCurrentlyReselling,
     
+    #[msg("The ticket is not listed")]
+    IsNotListed,
+    
     #[msg("Overflow occurred")]
     OverflowOccurred,
+    
+    #[msg("Failed to parse mint royalty config")]
+    MintRoyaltyParseError,
 }

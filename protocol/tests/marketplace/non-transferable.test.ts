@@ -64,9 +64,9 @@ describe("Marketplace: Non-transferable", () => {
 			TOKEN_2022_PROGRAM_ID
 		)
 
-	const servicePda = (mint: PublicKey) =>
+	const servicePda = (mint: Keypair) =>
 		PublicKey.findProgramAddressSync(
-			[Buffer.from(SERVICE_ACCOUNT_SEEDS), mint.toBuffer()],
+			[mint.publicKey.toBuffer()],
 			program.programId
 		)[0]
 
@@ -78,10 +78,10 @@ describe("Marketplace: Non-transferable", () => {
 		transfer_hook_program_id
 	)
 
-	const [mintRoyaltyConfig] = PublicKey.findProgramAddressSync(
-		[service_ticket_mint.publicKey.toBuffer()],
+	const mintRoyaltyConfig = (mint:Keypair) => PublicKey.findProgramAddressSync(
+		[mint.publicKey.toBuffer()],
 		transfer_hook_program_id
-	)
+	)[0]
 
 	before(async () => {
 		console.log("---- airdroping token ----")
@@ -127,7 +127,7 @@ describe("Marketplace: Non-transferable", () => {
 				associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
 				payer: serviceProvider.publicKey,
 				provider: serviceProvider.publicKey,
-				serviceAccount: servicePda(service_mint.publicKey),
+				serviceAccount: servicePda(service_mint),
 				serviceMint: service_mint.publicKey,
 				serviceTokenAccount: service_token(serviceProvider.publicKey),
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -156,7 +156,7 @@ describe("Marketplace: Non-transferable", () => {
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_mint.publicKey)
+			servicePda(service_mint)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
@@ -185,11 +185,11 @@ describe("Marketplace: Non-transferable", () => {
 				provider: serviceProvider.publicKey,
 				serviceTicketTokenAccount: service_ticket_token(serviceReseller.publicKey),
 				serviceTicketMint: service_ticket_mint.publicKey,
-				providerServiceAccount: servicePda(service_mint.publicKey),
+				providerServiceAccount: servicePda(service_mint),
 				serviceMint: service_mint.publicKey,
 				tokenProgram: TOKEN_2022_PROGRAM_ID,
 				systemProgram: SystemProgram.programId,
-				buyerServiceAccount: servicePda(service_ticket_mint.publicKey),
+				buyerServiceAccount: servicePda(service_ticket_mint),
 				transferHookProgramAccount: transfer_hook_program_id,
 				transferHookProgram: transfer_hook_program_id,
 				extraAccountMetasList: extraAccountMetaListPDA,
@@ -217,7 +217,7 @@ describe("Marketplace: Non-transferable", () => {
 		await sleep(3)
 
 		const service = await program.account.serviceAccount.fetch(
-			servicePda(service_ticket_mint.publicKey)
+			servicePda(service_ticket_mint)
 		)
 
 		console.log("👉 service:", JSON.parse(JSON.stringify(service)))
